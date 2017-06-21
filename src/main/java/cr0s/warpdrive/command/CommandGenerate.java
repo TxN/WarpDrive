@@ -1,25 +1,20 @@
 package cr0s.warpdrive.command;
 
-import cr0s.warpdrive.world.SpaceWorldGenerator;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.world.World;
-import cpw.mods.fml.common.FMLCommonHandler;
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.config.WarpDriveConfig;
 import cr0s.warpdrive.config.structures.AbstractStructure;
 import cr0s.warpdrive.config.structures.StructureManager;
 import cr0s.warpdrive.world.JumpgateGenerator;
 import cr0s.warpdrive.world.WorldGenSmallShip;
 import cr0s.warpdrive.world.WorldGenStation;
 
-/*
- *   /generate <structure>
- *   Possible structures:
- *   moon, ship, asteroid, astfield, gascloud, star
- */
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.world.World;
+
+import cpw.mods.fml.common.FMLCommonHandler;
 
 public class CommandGenerate extends CommandBase {
 	@Override
@@ -43,7 +38,7 @@ public class CommandGenerate extends CommandBase {
 		ChunkCoordinates coordinates = commandSender.getPlayerCoordinates();
 		
 		if (world == null || coordinates == null) {
-			WarpDrive.addChatMessage(commandSender, "* generate: unknown world or coordinates, probably an invalid command sender in action here.");
+			Commons.addChatMessage(commandSender, "* generate: unknown world or coordinates, probably an invalid command sender in action here.");
 			return;
 		}
 		int x = coordinates.posX;
@@ -51,7 +46,7 @@ public class CommandGenerate extends CommandBase {
 		int z = coordinates.posZ;
 		
 		if (params.length <= 0 || params.length == 3 || params.length > 5) {
-			WarpDrive.addChatMessage(commandSender, getCommandUsage(commandSender));
+			Commons.addChatMessage(commandSender, getCommandUsage(commandSender));
 			return;
 		}
 		
@@ -64,8 +59,8 @@ public class CommandGenerate extends CommandBase {
 		String structure = params[0];
 		
 		// Reject command, if player is not in space
-		if (world.provider.dimensionId != WarpDriveConfig.G_SPACE_DIMENSION_ID && (!"ship".equals(structure))) {
-			WarpDrive.addChatMessage(commandSender, "* generate: this structure is only allowed in space!");
+		if (!WarpDrive.starMap.isInSpace(world, x, z) && (!"ship".equals(structure))) {
+			Commons.addChatMessage(commandSender, "* generate: this structure is only allowed in space!");
 			return;
 		}
 		
@@ -74,7 +69,7 @@ public class CommandGenerate extends CommandBase {
 			switch (structure) {
 				case "ship":
 					WarpDrive.logger.info("/generate: generating NPC ship at " + x + ", " + y + ", " + z);
-					new WorldGenSmallShip(false).generate(world, world.rand, x, y, z);
+					new WorldGenSmallShip(false, true).generate(world, world.rand, x, y, z);
 					break;
 				case "station":
 					WarpDrive.logger.info("/generate: generating station at " + x + ", " + y + ", " + z);
@@ -84,11 +79,10 @@ public class CommandGenerate extends CommandBase {
 					generateStructure(commandSender, StructureManager.GROUP_ASTEROIDS, name, world, x, y - 10, z);
 					break;
 				case "astfield":
-					WarpDrive.logger.info("/generate: generating asteroid field at " + x + ", " + y + ", " + z);
-					SpaceWorldGenerator.generateAsteroidField(world, x, y, z);
+					generateStructure(commandSender, StructureManager.GROUP_ASTEROIDS_FIELDS, name, world, x, y, z);
 					break;
 				case "gascloud":
-					generateStructure(commandSender, StructureManager.GROUP_GASCLOUDS, name, world, x, y, z);
+					generateStructure(commandSender, StructureManager.GROUP_GAS_CLOUDS, name, world, x, y, z);
 					break;
 				case "moon":
 					generateStructure(commandSender, StructureManager.GROUP_MOONS, name, world, x, y - 16, z);
@@ -98,7 +92,7 @@ public class CommandGenerate extends CommandBase {
 					break;
 				case "jumpgate":
 					if (params.length != 2) {
-						WarpDrive.addChatMessage(commandSender, "Missing jumpgate name");
+						Commons.addChatMessage(commandSender, "Missing jumpgate name");
 					} else {
 						WarpDrive.logger.info("/generate: creating jumpgate at " + x + ", " + y + ", " + z);
 
@@ -110,7 +104,7 @@ public class CommandGenerate extends CommandBase {
 					}
 					break;
 				default:
-					WarpDrive.addChatMessage(commandSender, getCommandUsage(commandSender));
+					Commons.addChatMessage(commandSender, getCommandUsage(commandSender));
 					break;
 			}
 		}
@@ -131,7 +125,7 @@ public class CommandGenerate extends CommandBase {
 	private void generateStructure(ICommandSender commandSender, final String group, final String name, World world, final int x, final int y, final int z) {
 		AbstractStructure structure = StructureManager.getStructure(world.rand, group, name);
 		if (structure == null) {
-			WarpDrive.addChatMessage(commandSender, "Invalid " + group + " '" + name + "', try one of the followings:\n" + StructureManager.getStructureNames(group));
+			Commons.addChatMessage(commandSender, "Invalid " + group + " '" + name + "', try one of the followings:\n" + StructureManager.getStructureNames(group));
 		} else {
 			WarpDrive.logger.info("/generate: Generating " + group + ":" + structure.getName() + " at " + x + " " + y + " " + z);
 			structure.generate(world, world.rand, x, y, z);

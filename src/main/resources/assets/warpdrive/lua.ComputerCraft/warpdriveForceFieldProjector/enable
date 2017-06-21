@@ -1,0 +1,42 @@
+if not term.isColor() then
+  print("Advanced computer required")
+  exit()
+end
+
+local sides = peripheral.getNames()
+local projector
+for key, side in pairs(sides) do
+  os.sleep(0)
+  local deviceType = peripheral.getType(side)
+  if deviceType == "warpdriveForceFieldProjector" then
+    projector = peripheral.wrap(side)
+  end
+end
+
+if projector == nil then
+  term.setBackgroundColor(colors.red)
+  term.setTextColor(colors.white)
+  term.write("No force field projector detected")
+else
+  projector.enable(true)
+  os.sleep(1)
+  local status, isEnabled, isConnected, isPowered, shape, energy = projector.state()
+  if isConnected then
+    if isPowered then
+      term.setBackgroundColor(colors.lime)
+      term.setTextColor(colors.blue)
+      term.write("Projector is enabled")
+    else
+      term.setBackgroundColor(colors.red)
+      term.setTextColor(colors.white)
+      term.write("Projector is missing a shape!")
+    end
+  else
+    term.setBackgroundColor(colors.red)
+    term.setTextColor(colors.white)
+    term.write("Projector is missing a beam frequency!")
+  end
+end
+term.setBackgroundColor(colors.black)
+term.setTextColor(colors.white)
+print()

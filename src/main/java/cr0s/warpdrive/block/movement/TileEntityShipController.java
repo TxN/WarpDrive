@@ -1,17 +1,6 @@
 package cr0s.warpdrive.block.movement;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import li.cil.oc.api.machine.Arguments;
-import li.cil.oc.api.machine.Callback;
-import li.cil.oc.api.machine.Context;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.StatCollector;
-import cpw.mods.fml.common.Optional;
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.block.TileEntityAbstractInterfaced;
 import cr0s.warpdrive.block.movement.TileEntityShipCore.EnumShipCoreMode;
@@ -19,12 +8,27 @@ import cr0s.warpdrive.config.WarpDriveConfig;
 import cr0s.warpdrive.data.VectorI;
 import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.peripheral.IComputerAccess;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
 
-/**
- * Protocol block tile entity
- * @author Cr0s
- */
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.StatCollector;
+
+import cpw.mods.fml.common.Optional;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Constants.NBT;
+
 public class TileEntityShipController extends TileEntityAbstractInterfaced {
+	
 	// Variables
 	private int distance = 0;
 	private int direction = 0;
@@ -40,17 +44,14 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	
 	private String targetJumpgateName = "";
 	
-	// Gabarits
+	// Dimensions
 	private int front, right, up;
 	private int back, left, down;
 	
 	// Player attaching
 	public final ArrayList<String> players = new ArrayList<>();
-	public String playersString = "";
 	
 	private String beaconFrequency = "";
-	
-	boolean ready = false;                // Ready to operate (valid assembly)
 	
 	private final int updateInterval_ticks = 20 * WarpDriveConfig.SHIP_CONTROLLER_UPDATE_INTERVAL_SECONDS;
 	private int updateTicks = updateInterval_ticks;
@@ -76,14 +77,15 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 				"getShipSize",
 				"beaconFrequency",
 				"getOrientation",
-				"coreFrequency",
+				"shipName",
 				"isInSpace",
 				"isInHyperspace",
 				"targetJumpgate",
 				"isAttached",
 				"getEnergyRequired",
 				"movement",
-				"rotationSteps"
+				"rotationSteps",
+				"getMaxJumpDistance"
 		});
 		CC_scripts = Arrays.asList("startup");
 	}
@@ -119,12 +121,13 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	}
 	
 	private void setMode(final int mode) {
-		EnumShipCoreMode[] modes = EnumShipCoreMode.values();
-		if (mode >= 0 && mode <= modes.length) {
-			this.mode = modes[mode];
-			markDirty();
-			if (WarpDriveConfig.LOGGING_JUMP && worldObj != null) {
-				WarpDrive.logger.info(this + " Mode set to " + this.mode + " (" + this.mode.getCode() + ")");
+		for(EnumShipCoreMode enumShipCoreMode : EnumShipCoreMode.values()) {
+			if (enumShipCoreMode.getCode() == mode) {
+				this.mode = enumShipCoreMode;
+				markDirty();
+				if (WarpDriveConfig.LOGGING_JUMP && hasWorldObj()) {
+					WarpDrive.logger.info(this + " Mode set to " + this.mode + " (" + this.mode.getCode() + ")");
+				}
 			}
 		}
 	}
@@ -140,7 +143,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 			direction = parDirection;
 		}
 		markDirty();
-		if (WarpDriveConfig.LOGGING_JUMP && worldObj != null) {
+		if (WarpDriveConfig.LOGGING_JUMP && hasWorldObj()) {
 			WarpDrive.logger.info(this + " Direction set to " + direction);
 		}
 	}
@@ -150,7 +153,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		moveUp = parMoveUp;
 		moveRight = parMoveRight;
 		markDirty();
-		if (WarpDriveConfig.LOGGING_JUMP && worldObj != null) {
+		if (WarpDriveConfig.LOGGING_JUMP && hasWorldObj()) {
 			WarpDrive.logger.info(this + " Movement set to " + moveFront + " front, " + moveUp + " up, " + moveRight + " right");
 		}
 	}
@@ -158,7 +161,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	private void setRotationSteps(final byte parRotationSteps) {
 		rotationSteps = (byte) ((parRotationSteps + 4) % 4);
 		markDirty();
-		if (WarpDriveConfig.LOGGING_JUMP && worldObj != null) {
+		if (WarpDriveConfig.LOGGING_JUMP && hasWorldObj()) {
 			WarpDrive.logger.info(this + " RotationSteps set to " + rotationSteps);
 		}
 	}
@@ -177,6 +180,24 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	@Override
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
+		
+		players.clear();
+		if (tag.hasKey("players", NBT.TAG_STRING)) {// legacy up to 1.3.30
+			final String namePlayers_tag = tag.getString("players");
+			final String[] namePlayers_table = namePlayers_tag.split("\\|");
+			for (final String namePlayer : namePlayers_table) {
+				if (!namePlayer.isEmpty()) {
+					players.add(namePlayer);
+				}
+			}
+		} else {
+			final NBTTagList tagListPlayers = tag.getTagList("players", Constants.NBT.TAG_STRING);
+			for(int index = 0; index < tagListPlayers.tagCount(); index++) {
+				final String namePlayer = tagListPlayers.getStringTagAt(index);
+				players.add(namePlayer);
+			}
+		}
+		
 		setMode(tag.getInteger("mode"));
 		setFront(tag.getInteger("front"));
 		setRight(tag.getInteger("right"));
@@ -188,16 +209,20 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		setDirection(tag.getInteger("direction"));
 		setMovement(tag.getInteger("moveFront"), tag.getInteger("moveUp"), tag.getInteger("moveRight"));
 		setRotationSteps(tag.getByte("rotationSteps"));
-		playersString = tag.getString("players");
-		updatePlayersList();
 		setBeaconFrequency(tag.getString("bfreq"));
 	}
 	
 	@Override
 	public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
-		updatePlayersString();
-		tag.setString("players", playersString);
+		
+		final NBTTagList tagListPlayers = new NBTTagList();
+		for (final String namePlayer : players) {
+			NBTTagString tagStringPlayer = new NBTTagString(namePlayer);
+			tagListPlayers.appendTag(tagStringPlayer);
+		}
+		tag.setTag("players", tagListPlayers);
+		
 		tag.setInteger("mode", mode.getCode());
 		tag.setInteger("front", front);
 		tag.setInteger("right", right);
@@ -218,7 +243,9 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	@Override
 	public NBTTagCompound writeItemDropNBT(NBTTagCompound nbtTagCompound) {
 		nbtTagCompound = super.writeItemDropNBT(nbtTagCompound);
+		
 		nbtTagCompound.removeTag("players");
+		
 		nbtTagCompound.removeTag("mode");
 		nbtTagCompound.removeTag("front");
 		nbtTagCompound.removeTag("right");
@@ -252,7 +279,6 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		
 		entityPlayer.attackEntityFrom(DamageSource.generic, 1);
 		players.add(entityPlayer.getDisplayName());
-		updatePlayersString();
 		return StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
 					getBlockType().getLocalizedName())
 				+ StatCollector.translateToLocalFormatted("warpdrive.ship.playerAttached",
@@ -267,34 +293,12 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 						getAttachedPlayersList());
 	}
 	
-	public void updatePlayersString() {
-		String nick;
-		playersString = "";
-		
-		for (int i = 0; i < players.size(); i++) {
-			nick = players.get(i);
-			playersString += nick + "|";
-		}
-	}
-	
-	public void updatePlayersList() {
-		String[] playersArray = playersString.split("\\|");
-		
-		for (int i = 0; i < playersArray.length; i++) {
-			String nick = playersArray[i];
-			
-			if (!nick.isEmpty()) {
-				players.add(nick);
-			}
-		}
-	}
-	
 	public String getAttachedPlayersList() {
 		StringBuilder list = new StringBuilder("");
 		
 		for (int i = 0; i < players.size(); i++) {
-			String nick = players.get(i);
-			list.append(nick + ((i == players.size() - 1) ? "" : ", "));
+			final String nick = players.get(i);
+			list.append(nick).append(((i == players.size() - 1) ? "" : ", "));
 		}
 		
 		if (players.isEmpty()) {
@@ -363,9 +367,17 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		this.down = down;
 	}
 	
-	private void setDistance(int distance) {
-		this.distance = Math.max(1, Math.min(WarpDriveConfig.SHIP_MAX_JUMP_DISTANCE, distance));
-		if (WarpDriveConfig.LOGGING_JUMP) {
+	public int getMaxJumpDistance() {
+		int maxDistance = WarpDriveConfig.SHIP_MAX_JUMP_DISTANCE;
+		if (worldObj == null || WarpDrive.starMap.isInHyperspace(worldObj, xCoord, zCoord)) {
+			maxDistance *= WarpDriveConfig.SHIP_HYPERSPACE_ACCELERATION;
+		}
+		return maxDistance;
+	}
+	
+	private void setDistance(final int distance) {
+		this.distance = Math.max(1, Math.min(getMaxJumpDistance(), distance));
+		if (WarpDriveConfig.LOGGING_JUMP && hasWorldObj()) {
 			WarpDrive.logger.info(this + " Jump distance set to " + distance);
 		}
 	}
@@ -524,6 +536,12 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	
 	@Callback
 	@Optional.Method(modid = "OpenComputers")
+	public Object[] getMaxJumpDistance(Context context, Arguments arguments) {
+		return new Object[] { getMaxJumpDistance() };
+	}
+	
+	@Callback
+	@Optional.Method(modid = "OpenComputers")
 	public Object[] getEnergyRequired(Context context, Arguments arguments) {
 		if (core == null) {
 			return null;
@@ -562,20 +580,20 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	
 	@Callback
 	@Optional.Method(modid = "OpenComputers")
-	public Object[] coreFrequency(Context context, Arguments arguments) {
+	public Object[] shipName(Context context, Arguments arguments) {
 		return shipName(argumentsOCtoCC(arguments));
 	}
 	
 	@Callback
 	@Optional.Method(modid = "OpenComputers")
 	public Object[] isInSpace(Context context, Arguments arguments) {
-		return new Boolean[] { worldObj.provider.dimensionId == WarpDriveConfig.G_SPACE_DIMENSION_ID };
+		return new Boolean[] { WarpDrive.starMap.isInSpace(worldObj, xCoord, zCoord) };
 	}
 	
 	@Callback
 	@Optional.Method(modid = "OpenComputers")
 	public Object[] isInHyperspace(Context context, Arguments arguments) {
-		return new Boolean[] { worldObj.provider.dimensionId == WarpDriveConfig.G_HYPERSPACE_DIMENSION_ID };
+		return new Boolean[] { WarpDrive.starMap.isInHyperspace(worldObj, xCoord, zCoord) };
 	}
 	
 	@Callback
@@ -587,19 +605,17 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	@Callback
 	@Optional.Method(modid = "OpenComputers")
 	public Object[] isAttached(Context context, Arguments arguments) {
-		if (core != null) {
-			return new Object[] { core.controller != null };
-		}
-		return null;
+		return isAttached();
 	}
 	
+	// Common OC/CC methods
 	private Object[] dim_positive(Object[] arguments) {
 		try {
 			if (arguments.length == 3) {
 				int argInt0, argInt1, argInt2;
-				argInt0 = clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(toInt(arguments[0])));
-				argInt1 = clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(toInt(arguments[1])));
-				argInt2 = clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(toInt(arguments[2])));
+				argInt0 = Commons.clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(Commons.toInt(arguments[0])));
+				argInt1 = Commons.clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(Commons.toInt(arguments[1])));
+				argInt2 = Commons.clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(Commons.toInt(arguments[2])));
 				if (WarpDriveConfig.LOGGING_LUA) {
 					WarpDrive.logger.info(this + " Positive dimensions set to front " + argInt0 + ", right " + argInt1 + ", up " + argInt2);
 				}
@@ -618,9 +634,9 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		try {
 			if (arguments.length == 3) {
 				int argInt0, argInt1, argInt2;
-				argInt0 = clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(toInt(arguments[0])));
-				argInt1 = clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(toInt(arguments[1])));
-				argInt2 = clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(toInt(arguments[2])));
+				argInt0 = Commons.clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(Commons.toInt(arguments[0])));
+				argInt1 = Commons.clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(Commons.toInt(arguments[1])));
+				argInt2 = Commons.clamp(0, WarpDriveConfig.SHIP_MAX_SIDE_SIZE, Math.abs(Commons.toInt(arguments[2])));
 				if (WarpDriveConfig.LOGGING_LUA) {
 					WarpDrive.logger.info(this + " Negative dimensions set to back " + argInt0 + ", left " + argInt1 + ", down " + argInt2);
 				}
@@ -638,7 +654,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	private Object[] mode(Object[] arguments) {
 		try {
 			if (arguments.length == 1) {
-				setMode(toInt(arguments[0]));
+				setMode(Commons.toInt(arguments[0]));
 			}
 		} catch (Exception exception) {
 			return new Integer[] { mode.getCode() };
@@ -650,7 +666,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	private Object[] distance(Object[] arguments) {
 		try {
 			if (arguments.length == 1) {
-				setDistance(toInt(arguments[0]));
+				setDistance(Commons.toInt(arguments[0]));
 			}
 		} catch (Exception exception) {
 			return new Integer[] { getDistance() };
@@ -662,7 +678,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	private Object[] direction(Object[] arguments) {
 		try {
 			if (arguments.length == 1) {
-				setDirection(toInt(arguments[0]));
+				setDirection(Commons.toInt(arguments[0]));
 			}
 		} catch (Exception exception) {
 			return new Integer[] { getDirection() };
@@ -671,10 +687,17 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		return new Integer[] { getDirection() };
 	}
 	
+	private Object[] isAttached() {
+		if (core != null) {
+			return new Object[] { core.controller != null };
+		}
+		return new Object[] { false };
+	}
+	
 	private Object[] movement(Object[] arguments) {
 		try {
 			if (arguments.length == 3) {
-				setMovement(toInt(arguments[0]), toInt(arguments[1]), toInt(arguments[2]));
+				setMovement(Commons.toInt(arguments[0]), Commons.toInt(arguments[1]), Commons.toInt(arguments[2]));
 			}
 		} catch (Exception exception) {
 			return new Integer[] { moveFront, moveUp, moveRight };
@@ -686,7 +709,7 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	private Object[] rotationSteps(Object[] arguments) {
 		try {
 			if (arguments.length == 1) {
-				setRotationSteps((byte)toInt(arguments[0]));
+				setRotationSteps((byte) Commons.toInt(arguments[0]));
 			}
 		} catch (Exception exception) {
 			return new Integer[] { (int) rotationSteps };
@@ -710,26 +733,27 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 	
 	private Object[] summon(Object[] arguments) {
 		if (arguments.length != 1) {
-			return new Object[] { false };
+			return new Object[] { false, "Expecting 1 argument: Integer attached player index" };
 		}
 		int playerIndex;
 		try {
-			playerIndex = toInt(arguments[0]);
+			playerIndex = Commons.toInt(arguments[0]);
 		} catch (Exception exception) {
-			return new Object[] { false };
+			return new Object[] { false, "Integer expected for 1st argument" };
 		}
 		
 		if (playerIndex >= 0 && playerIndex < players.size()) {
-			setToSummon(players.get(playerIndex));
-			return new Object[] { true };
+			final String namePlayer = players.get(playerIndex);
+			setToSummon(namePlayer);
+			return new Object[] { true, namePlayer };
 		}
-		return new Object[] { false };
+		return new Object[] { false, "Index out of range" };
 	}
 	
 	private Object[] getEnergyRequired(Object[] arguments) {
 		try {
 			if (arguments.length == 1 && core != null) {
-				return new Object[] { core.calculateRequiredEnergy(getMode(), core.shipMass, toInt(arguments[0])) };
+				return new Object[] { core.calculateRequiredEnergy(getMode(), core.shipMass, Commons.toInt(arguments[0])) };
 			}
 		} catch (Exception exception) {
 			return new Integer[] { -1 };
@@ -795,85 +819,83 @@ public class TileEntityShipController extends TileEntityAbstractInterfaced {
 		switch (methodName) {
 			case "dim_positive": // dim_positive (front, right, up)
 				return dim_positive(arguments);
-
+			
 			case "dim_negative": // dim_negative (back, left, down)
 				return dim_negative(arguments);
-
+			
 			case "mode": // mode (mode)
 				return mode(arguments);
-
+			
 			case "distance": // distance (distance)
 				return distance(arguments);
-
+			
 			case "direction": // direction (direction)
 				return direction(arguments);
-
+			
 			case "getAttachedPlayers":
 				return getAttachedPlayers();
-
+			
 			case "summon":
 				return summon(arguments);
-
+			
 			case "summon_all":
 				setSummonAllFlag(true);
-
 				break;
+			
 			case "position":
 				if (core == null) {
 					return null;
 				}
-
-				return new Object[]{core.xCoord, core.yCoord, core.zCoord};
-
+				return new Object[] { core.xCoord, core.yCoord, core.zCoord };
+			
 			case "energy":
 				if (core == null) {
 					return null;
 				}
-
 				return core.energy();
-
+			
 			case "getEnergyRequired": // getEnergyRequired(distance)
 				return getEnergyRequired(arguments);
-
+			
 			case "jump":
 				doJump();
-
 				break;
+			
 			case "getShipSize":
 				return getShipSize();
-
+			
 			case "beaconFrequency":
 				return beaconFrequency(arguments);
-
+			
 			case "getOrientation":
 				if (core != null) {
-					return new Object[]{core.dx, 0, core.dz};
+					return new Object[] { core.dx, 0, core.dz };
 				}
 				return null;
-
-			case "coreFrequency":
+			
+			case "shipName":
 				return shipName(arguments);
-
+			
 			case "isInSpace":
-				return new Boolean[]{worldObj.provider.dimensionId == WarpDriveConfig.G_SPACE_DIMENSION_ID};
-
+				return new Boolean[] { WarpDrive.starMap.isInSpace(worldObj, xCoord, zCoord) };
+			
 			case "isInHyperspace":
-				return new Boolean[]{worldObj.provider.dimensionId == WarpDriveConfig.G_HYPERSPACE_DIMENSION_ID};
-
+				return new Boolean[] { WarpDrive.starMap.isInHyperspace(worldObj, xCoord, zCoord) };
+			
 			case "targetJumpgate":
 				return targetJumpgate(arguments);
-
-			case "isAttached": // isAttached
-				if (core != null) {
-					return new Object[]{core.controller != null};
-				}
-				break;
+			
+			case "isAttached":
+				return isAttached();
+			
 			case "movement":
 				return movement(arguments);
-
+			
 			case "rotationSteps":
 				return rotationSteps(arguments);
 			
+			case "getMaxJumpDistance":
+				return new Object[] { getMaxJumpDistance() };
 		}
 		
 		return super.callMethod(computer, context, method, arguments);

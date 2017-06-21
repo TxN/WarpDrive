@@ -1,44 +1,43 @@
 package cr0s.warpdrive.event;
 
+import cr0s.warpdrive.BreathingManager;
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.config.Dictionary;
+import cr0s.warpdrive.config.WarpDriveConfig;
+import cr0s.warpdrive.data.CelestialObject;
+import cr0s.warpdrive.data.StarMapRegistry;
+import cr0s.warpdrive.data.StateAir;
+import cr0s.warpdrive.data.VectorI;
+import cr0s.warpdrive.world.SpaceTeleporter;
+
 import java.util.HashMap;
 
-import cr0s.warpdrive.data.VectorI;
-import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.api.IBreathingHelmet;
-import cr0s.warpdrive.config.Dictionary;
-import cr0s.warpdrive.config.WarpDriveConfig;
-import cr0s.warpdrive.world.SpaceTeleporter;
 
 public class LivingHandler {
-	private final HashMap<Integer, Integer> entity_airBlock;
-	private final HashMap<String, Integer> player_airTank;
+	
 	private final HashMap<String, Integer> player_cloakTicks;
 	
 	private static final int CLOAK_CHECK_TIMEOUT_TICKS = 100;
-	private static final int AIR_BLOCK_TICKS = 20;
-	private static final int AIR_TANK_TICKS = 300;
-	private static final int AIR_DROWN_TICKS = 20;
-	private static final VectorI[] vAirOffsets = { new VectorI(0, 0, 0), new VectorI(0, 1, 0),
-		new VectorI(0, 1, 1), new VectorI(0, 1, -1), new VectorI(1, 1, 0), new VectorI(1, 1, 0),
-		new VectorI(0, 0, 1), new VectorI(0, 0, -1), new VectorI(1, 0, 0), new VectorI(1, 0, 0) };
+	
+	private static final int BORDER_WARNING_RANGE_BLOCKS_SQUARED = 20 * 20;
+	private static final int BORDER_BYPASS_RANGE_BLOCKS_SQUARED = 32 * 32;
+	private static final int BORDER_BYPASS_PULL_BACK_BLOCKS = 16;
+	private static final int BORDER_BYPASS_DAMAGES_PER_TICK = 9000;
 	
 	public LivingHandler() {
-		entity_airBlock = new HashMap<>();
-		player_airTank = new HashMap<>();
 		player_cloakTicks = new HashMap<>();
 	}
 	
@@ -48,29 +47,82 @@ public class LivingHandler {
 			return;
 		}
 		
-		EntityLivingBase entity = event.entityLiving;
-		int x = MathHelper.floor_double(entity.posX);
-		int y = MathHelper.floor_double(entity.posY);
-		int z = MathHelper.floor_double(entity.posZ);
+		final EntityLivingBase entity = event.entityLiving;
+		final int x = MathHelper.floor_double(entity.posX);
+		final int y = MathHelper.floor_double(entity.posY);
+		final int z = MathHelper.floor_double(entity.posZ);
 		
+		// *** world border handling
 		// Instant kill if entity exceeds world's limit
-		if (WarpDriveConfig.G_SPACE_WORLDBORDER_BLOCKS > 0
-		  && (Math.abs(x) > WarpDriveConfig.G_SPACE_WORLDBORDER_BLOCKS || Math.abs(z) > WarpDriveConfig.G_SPACE_WORLDBORDER_BLOCKS)) {
+		final CelestialObject celestialObject = StarMapRegistry.getCelestialObject(entity.worldObj, x, z);
+		if (celestialObject == null) {
+			// unregistered dimension => exit
+			return;
+		}
+		final double distanceSquared = celestialObject.getSquareDistanceOutsideBorder(entity.worldObj.provider.dimensionId, x, z);
+		if (distanceSquared <= 0.0D) {
+			// are we close to the border?
+			if ( Math.abs(distanceSquared) <= BORDER_WARNING_RANGE_BLOCKS_SQUARED
+			  && entity instanceof EntityPlayer
+			  && entity.ticksExisted % 40 == 0) {
+				Commons.addChatMessage((EntityPlayer) entity,
+					String.format("§cProximity alert: world border is only %d m away!",
+						(int) Math.sqrt(Math.abs(distanceSquared))));
+			}
+		} else {
 			if (entity instanceof EntityPlayerMP) {
 				if (((EntityPlayerMP) entity).capabilities.isCreativeMode) {
+					if (entity.ticksExisted % 100 == 0) {
+						Commons.addChatMessage((EntityPlayer) entity,
+						String.format("§cYou're %d m outside the world border...",
+							(int) Math.sqrt(Math.abs(distanceSquared))));
+					}
 					return;
 				}
 			}
 			
-			entity.attackEntityFrom(DamageSource.outOfWorld, 9000);
-			return;
+			// pull back the entity
+			final double relativeX = entity.posX - celestialObject.dimensionCenterX;
+			final double relativeZ = entity.posZ - celestialObject.dimensionCenterZ;
+			final double newAbsoluteX = Math.min(Math.abs(relativeX), Math.max(0.0D, celestialObject.borderRadiusX - BORDER_BYPASS_PULL_BACK_BLOCKS));
+			final double newAbsoluteZ = Math.min(Math.abs(relativeZ), Math.max(0.0D, celestialObject.borderRadiusZ - BORDER_BYPASS_PULL_BACK_BLOCKS));
+			final double newEntityX = celestialObject.dimensionCenterX + Math.signum(relativeX) * newAbsoluteX;
+			final double newEntityY = entity.posY + 0.1D;
+			final double newEntityZ = celestialObject.dimensionCenterX + Math.signum(relativeZ) * newAbsoluteZ;
+			// entity.isAirBorne = true;
+			// @TODO: force client refresh of non-player entities
+			if (entity instanceof EntityPlayerMP) {
+				EntityPlayerMP player = (EntityPlayerMP) entity;
+				player.setPositionAndUpdate(newEntityX, newEntityY, newEntityZ);
+			} else {
+				entity.setPosition(newEntityX, newEntityY, newEntityZ);
+			}
+			
+			// spam chat if it's a player
+			if (entity instanceof EntityPlayer && !entity.isDead && entity.deathTime <= 0) {
+				Commons.addChatMessage((EntityPlayer) entity,
+					String.format("§4You've reached the world border..."));
+			}
+			
+			// delay damage for 'fast moving' players
+			if (distanceSquared < BORDER_BYPASS_RANGE_BLOCKS_SQUARED) {
+				// just set on fire
+				entity.setFire(1);
+			} else {
+				// full damage
+				entity.attackEntityFrom(DamageSource.outOfWorld, BORDER_BYPASS_DAMAGES_PER_TICK);
+				return;
+			}
 		}
+		
 		if (entity instanceof EntityPlayerMP) {
+			// *** cloak handling
 			updatePlayerCloakState(entity);
 			
-			// skip players in creative
-			if (((EntityPlayerMP) entity).capabilities.isCreativeMode) {
-				return;
+			// *** air handling
+			if ( WarpDriveConfig.BREATHING_AIR_AT_ENTITY_DEBUG
+			  && entity.worldObj.getWorldTime() % 20 == 0) {
+				StateAir.dumpAroundEntity((EntityPlayer) entity);
 			}
 		}
 		
@@ -80,110 +132,58 @@ public class LivingHandler {
 		}
 		
 		// If entity is in vacuum, check and start consuming air cells
-		if ( entity.worldObj.provider.dimensionId == WarpDriveConfig.G_SPACE_DIMENSION_ID
-		  || entity.worldObj.provider.dimensionId == WarpDriveConfig.G_HYPERSPACE_DIMENSION_ID) {
-			// find an air block
-			VectorI vAirBlock = null;	
-			Block block;
-			for (VectorI vOffset : vAirOffsets) {
-				VectorI vPosition = new VectorI(x + vOffset.x, y + vOffset.y, z + vOffset.z);
-				block = entity.worldObj.getBlock(vPosition.x, vPosition.y, vPosition.z);
-				if (block.isAssociatedBlock(WarpDrive.blockAir)) {
-					vAirBlock = vPosition;
-					break;
-				}
+		if (!celestialObject.hasAtmosphere()) {
+			// skip players in creative
+			if ( !(entity instanceof EntityPlayerMP)
+			  || !((EntityPlayerMP) entity).capabilities.isCreativeMode ) {
+				BreathingManager.onLivingUpdateEvent(entity, x, y, z);
 			}
-			
-			boolean notInVacuum = vAirBlock != null;
-			Integer air;
-			if (notInVacuum) {// In space with air blocks
-				air = entity_airBlock.get(entity.getEntityId());
-				if (air == null) {
-					entity_airBlock.put(entity.getEntityId(), AIR_BLOCK_TICKS);
-				} else if (air <= 1) {// time elapsed => consume air block
-					entity_airBlock.put(entity.getEntityId(), AIR_BLOCK_TICKS);
+		}
+		
+		
+		// *** world transition handling
+		// If player falling down, teleport to child celestial object
+		if (entity.posY < -10.0D) {
+			final CelestialObject celestialObjectChild = StarMapRegistry.getClosestChildCelestialObject(
+					entity.worldObj.provider.dimensionId, x, z);
+			// are we actually in orbit?
+			if ( celestialObjectChild != null
+			  && !celestialObject.isHyperspace()
+			  && celestialObjectChild.getSquareDistanceInParent(entity.worldObj.provider.dimensionId, x, z) <= 0.0D ) {
+				
+				final WorldServer worldTarget = DimensionManager.getWorld(celestialObjectChild.dimensionId);
+				if (worldTarget != null) {
+					final VectorI vEntry = celestialObjectChild.getEntryOffset();
+					final int xTarget = x + vEntry.x;
+					final int yTarget = worldTarget.getActualHeight() + 5;
+					final int zTarget = z + vEntry.z;
 					
-					int metadata = entity.worldObj.getBlockMetadata(vAirBlock.x, vAirBlock.y, vAirBlock.z);
-					if (metadata > 0 && metadata < 15) {
-						entity.worldObj.setBlockMetadataWithNotify(vAirBlock.x, vAirBlock.y, vAirBlock.z, metadata - 1, 2);
-					}
-				} else {
-					entity_airBlock.put(entity.getEntityId(), air - 1);
-				}
-			} else {// In space without air blocks
-				// Damage entity if in vacuum without protection
-				if (entity instanceof EntityPlayerMP) {
-					air = entity_airBlock.get(entity.getEntityId());
-					if (air != null && air > 0) {
-						entity_airBlock.put(entity.getEntityId(), air - 1);
-						return;
-					}
-					EntityPlayerMP player = (EntityPlayerMP) entity;
-					String playerName = player.getCommandSenderName();
-					air = player_airTank.get(playerName);
-					
-					boolean hasHelmet = false;
-					ItemStack helmetStack = player.getCurrentArmor(3);
-					if (helmetStack != null) {
-						Item helmet = helmetStack.getItem();
-						if (helmet instanceof IBreathingHelmet) {
-							IBreathingHelmet breathHelmet = (IBreathingHelmet) helmet;
-							int airTicks = breathHelmet.ticksPerCanDamage();
-							if (breathHelmet.canBreath(player)) {
-								hasHelmet = true;
-								if (air == null) {// new player in space => grace period
-									player_airTank.put(playerName, airTicks);
-								} else if (air <= 1) {
-									if (breathHelmet.removeAir(player)) {
-										player_airTank.put(playerName, airTicks);
-									} else {
-										player_airTank.put(playerName, AIR_DROWN_TICKS);
-										player.attackEntityFrom(WarpDrive.damageAsphyxia, 2.0F);
-									}
-								} else {
-									player_airTank.put(playerName, air - 1);
-								}
-							}
-						} else if (Dictionary.ITEMS_BREATHINGIC2.contains(helmet)) {
-							hasHelmet = true;
-							if (air == null) {// new player in space => grace period
-								player_airTank.put(playerName, AIR_TANK_TICKS);
-							} else if (air <= 1) {
-								if (consumeCompressedAir(player.inventory.mainInventory, player)) {
-									player_airTank.put(playerName, AIR_TANK_TICKS);
-								} else {
-									player_airTank.put(playerName, AIR_DROWN_TICKS);
-									entity.attackEntityFrom(WarpDrive.damageAsphyxia, 2.0F);
-								}
-							} else {
-								player_airTank.put(playerName, air - 1);
-							}
+					if (entity instanceof EntityPlayerMP) {
+						final EntityPlayerMP player = (EntityPlayerMP) entity;
+						
+						// add tolerance to fall distance
+						player.fallDistance = -5.0F;
+						
+						// transfer player to new dimension
+						player.mcServer.getConfigurationManager().transferPlayerToDimension(
+								player,
+								celestialObjectChild.dimensionId,
+								new SpaceTeleporter(worldTarget, 0, xTarget, yTarget, zTarget) );
+						
+						// add fire if we're entering an atmosphere
+						if (!celestialObject.hasAtmosphere() && celestialObjectChild.hasAtmosphere()) {
+							player.setFire(30);
 						}
-					}
-					
-					if (!hasHelmet) {
-						if (air == null) {// new player in space => grace period
-							player_airTank.put(playerName, AIR_TANK_TICKS);
-						} else if (air <= 1) {
-							player_airTank.put(playerName, AIR_DROWN_TICKS);
-							entity.attackEntityFrom(WarpDrive.damageAsphyxia, 2.0F);
-						} else {
-							player_airTank.put(playerName, air - 1);
-						}
-					}
-					
-					// If player falling down, teleport on earth
-					if (entity.posY < -10.0D) {
-						player.mcServer.getConfigurationManager().transferPlayerToDimension(player, 0,
-								new SpaceTeleporter(DimensionManager.getWorld(WarpDriveConfig.G_SPACE_DIMENSION_ID), 0, x, 250, z));
-						player.setFire(30);
-						player.setPositionAndUpdate(entity.posX, 250.0D, entity.posZ);
+						
+						// close player transfer 
+						player.setPositionAndUpdate(xTarget + 0.5D, yTarget, zTarget + 0.5D);
 						player.sendPlayerAbilities();
 					}
-				} else {// (in space, no air block and not a player)
-					entity_airBlock.put(entity.getEntityId(), 0);
-					entity.attackEntityFrom(WarpDrive.damageAsphyxia, 2.0F);
 				}
+				
+			} else if (celestialObject.isHyperspace() || celestialObject.isSpace()) {
+				// player is in space or hyperspace, let's roll around
+				entity.setPositionAndUpdate(entity.posX, 260.0D, entity.posZ);
 			}
 		}
 	}
@@ -210,48 +210,49 @@ public class LivingHandler {
 		}
 	}
 	
-	private static boolean consumeCompressedAir(ItemStack[] inventory, EntityPlayerMP entityPlayer) {
-		for (int j = 0; j < inventory.length; ++j) {
-			if (inventory[j] != null && inventory[j].isItemEqual(WarpDriveConfig.IC2_compressedAir)) {
-				inventory[j].stackSize--;
-				if (inventory[j].stackSize <= 0) {
-					inventory[j] = null;
-				}
-				
-				if (WarpDriveConfig.IC2_emptyCell != null) {
-					ItemStack emptyCell = new ItemStack(WarpDriveConfig.IC2_emptyCell.getItem(), 1, 0);
-					if (!entityPlayer.inventory.addItemStackToInventory(emptyCell)) {
-						World world = entityPlayer.worldObj;
-						EntityItem entityItem = new EntityItem(world, entityPlayer.posX, entityPlayer.posY, entityPlayer.posZ, emptyCell);
-						entityPlayer.worldObj.spawnEntityInWorld(entityItem);
-					}
-					entityPlayer.sendContainerToPlayer(entityPlayer.inventoryContainer);
-				}
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	@SubscribeEvent
 	public void onLivingFall(LivingFallEvent event) {
-		EntityLivingBase entity = event.entityLiving;
-		float distance = event.distance;
+		// player in the overworld falling from
+		// 3 blocks high is motionY = -0,6517088xxx
+		// 4 blocks high is motionY = -0,717
+		// 5 blocks high is motionY = -0.844
+		// slime in the overworld falling from
+		// 2.177279 blocks high is motionY -0.6517000126838683
+		// spider in the overworld falling from
+		// 3.346 blocks high is motionY -0.717
 		
-		if (entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer) entity;
-			int check = MathHelper.ceiling_float_int(distance - 3.0F);
-			
-			if (check > 0) {
-				for (int i = 0; i < 4; i++) {
-					ItemStack armor = player.getCurrentArmor(i);
-					if (armor != null) {
-						if (Dictionary.ITEMS_NOFALLDAMAGE.contains(armor.getItem())) {
-							event.setCanceled(true); // Don't damage player
-						}
-					}
+		// cancel in case of very low speed
+		final EntityLivingBase entity = event.entityLiving;
+		if (entity.motionY > -0.65170D) {
+			event.setCanceled(true); // Don't damage entity
+			return;
+		}
+		
+		// get vanilla check for fall distance, as found in EntityLivingBase.fall()
+		// we're ignoring the jump potion effect bonus
+		final float distance = event.distance;
+		final int check = MathHelper.ceiling_float_int(distance - 3.0F);
+		// ignore small jumps
+		if (check <= 0) {
+			event.setCanceled(true); // Don't damage entity
+			return;
+		}
+		
+		if (WarpDrive.isDev) {
+			WarpDrive.logger.warn(String.format("Entity fall damage at motionY %.3f from distance %.3f of %s", entity.motionY, distance, entity));
+		}
+		
+		// check for equipment with NOFALLDAMAGE tag
+		for (int i = 1; i < 5; i++) {
+			final ItemStack itemStackInSlot = entity.getEquipmentInSlot(i);
+			if (itemStackInSlot != null) {
+				if (Dictionary.ITEMS_NOFALLDAMAGE.contains(itemStackInSlot.getItem())) {
+					event.setCanceled(true); // Don't damage entity
 				}
 			}
 		}
+		
+		// (entity has significant speed, above minimum distance and there's no absorption)
+		// Let it fall
 	}
 }

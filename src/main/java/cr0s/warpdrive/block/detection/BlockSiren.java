@@ -1,9 +1,10 @@
 package cr0s.warpdrive.block.detection;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import java.util.List;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
@@ -13,7 +14,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
-import java.util.List;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockSiren extends BlockAbstractContainer {
 	
@@ -38,8 +40,8 @@ public class BlockSiren extends BlockAbstractContainer {
 		setBlockName("warpdrive.detection.Siren");
 	}
 	
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[4];
 		// Solid textures
@@ -49,6 +51,7 @@ public class BlockSiren extends BlockAbstractContainer {
 		iconBuffer[ICON_RAID_SUPERIOR] = iconRegister.registerIcon("warpdrive:detection/siren_raid_superior");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		if (!getIsRaid(metadata)) {

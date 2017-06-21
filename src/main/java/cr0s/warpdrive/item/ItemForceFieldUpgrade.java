@@ -1,9 +1,13 @@
 package cr0s.warpdrive.item;
 
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.block.forcefield.BlockForceFieldProjector;
 import cr0s.warpdrive.block.forcefield.BlockForceFieldRelay;
 import cr0s.warpdrive.data.EnumForceFieldUpgrade;
+
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
@@ -14,10 +18,14 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-import java.util.List;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemForceFieldUpgrade extends Item {
-	private final IIcon[] icons;
+	
+	@SideOnly(Side.CLIENT)
+	private IIcon[] icons;
+	
 	private static ItemStack[] itemStackCache;
 	
 	public ItemForceFieldUpgrade() {
@@ -26,7 +34,6 @@ public class ItemForceFieldUpgrade extends Item {
 		setUnlocalizedName("warpdrive.forcefield.upgrade");
 		setCreativeTab(WarpDrive.creativeTabWarpDrive);
 		
-		icons = new IIcon[EnumForceFieldUpgrade.length];
 		itemStackCache = new ItemStack[EnumForceFieldUpgrade.length];
 	}
 	
@@ -45,10 +52,12 @@ public class ItemForceFieldUpgrade extends Item {
 		return new ItemStack(WarpDrive.itemForceFieldUpgrade, amount, enumForceFieldUpgrade.ordinal());
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerIcons(IIconRegister par1IconRegister) {
+	public void registerIcons(IIconRegister iconRegister) {
+		icons = new IIcon[EnumForceFieldUpgrade.length];
 		for(EnumForceFieldUpgrade enumForceFieldUpgrade : EnumForceFieldUpgrade.values()) {
-			icons[enumForceFieldUpgrade.ordinal()] = par1IconRegister.registerIcon("warpdrive:forcefield/upgrade_" + enumForceFieldUpgrade.unlocalizedName);
+			icons[enumForceFieldUpgrade.ordinal()] = iconRegister.registerIcon("warpdrive:forcefield/upgrade_" + enumForceFieldUpgrade.unlocalizedName);
 		}
 	}
 	
@@ -90,23 +99,23 @@ public class ItemForceFieldUpgrade extends Item {
 		
 		String tooltipName1 = getUnlocalizedName(itemStack) + ".tooltip";
 		if (StatCollector.canTranslate(tooltipName1)) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName1));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName1));
 		}
 		
 		String tooltipName2 = getUnlocalizedName() + ".tooltip";
 		if ((!tooltipName1.equals(tooltipName2)) && StatCollector.canTranslate(tooltipName2)) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName2));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName2));
 		}
 		
-		WarpDrive.addTooltip(list, "\n");
+		Commons.addTooltip(list, "\n");
 		
 		EnumForceFieldUpgrade enumForceFieldUpgrade = EnumForceFieldUpgrade.get(itemStack.getItemDamage());
 		if (enumForceFieldUpgrade.maxCountOnProjector > 0) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted("item.warpdrive.forcefield.upgrade.tooltip.usage.projector"));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted("item.warpdrive.forcefield.upgrade.tooltip.usage.projector"));
 		}
 		if (enumForceFieldUpgrade.maxCountOnRelay > 0) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted("item.warpdrive.forcefield.upgrade.tooltip.usage.relay"));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted("item.warpdrive.forcefield.upgrade.tooltip.usage.relay"));
 		}
-		WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted("item.warpdrive.forcefield.upgrade.tooltip.usage.dismount"));
+		Commons.addTooltip(list, StatCollector.translateToLocalFormatted("item.warpdrive.forcefield.upgrade.tooltip.usage.dismount"));
 	}
 }

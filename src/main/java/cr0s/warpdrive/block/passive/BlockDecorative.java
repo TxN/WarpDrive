@@ -1,8 +1,10 @@
 package cr0s.warpdrive.block.passive;
 
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.data.EnumDecorativeType;
+
 import java.util.List;
 
-import cr0s.warpdrive.data.EnumDecorativeType;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -10,20 +12,24 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
-import cr0s.warpdrive.WarpDrive;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockDecorative extends Block {
+	
+	@SideOnly(Side.CLIENT)
 	private static IIcon[] icons;
+	
 	private static ItemStack[] itemStackCache;
 	
 	public BlockDecorative() {
 		super(Material.iron);
 		setHardness(1.5f);
 		setStepSound(Block.soundTypeMetal);
-		setBlockName("warpdrive.passive.Plain");
+		setBlockName("warpdrive.decoration.decorative.plain");
 		setCreativeTab(WarpDrive.creativeTabWarpDrive);
 		
-		icons = new IIcon[EnumDecorativeType.length];
 		itemStackCache = new ItemStack[EnumDecorativeType.length];
 	}
 	
@@ -34,13 +40,16 @@ public class BlockDecorative extends Block {
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister) {
+		icons = new IIcon[EnumDecorativeType.length];
 		for (EnumDecorativeType enumDecorativeType : EnumDecorativeType.values()) {
-			icons[enumDecorativeType.ordinal()] = iconRegister.registerIcon("warpdrive:passive/decorative" + enumDecorativeType.unlocalizedName);
+			icons[enumDecorativeType.ordinal()] = iconRegister.registerIcon("warpdrive:decoration/decorative-" + enumDecorativeType.unlocalizedName);
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int damage) {
 		if (damage >= 0 && damage < EnumDecorativeType.length) {

@@ -1,16 +1,38 @@
 package cr0s.warpdrive.render;
 
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.block.forcefield.TileEntityForceField;
 import cr0s.warpdrive.config.Dictionary;
-import net.minecraft.block.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockAnvil;
+import net.minecraft.block.BlockBeacon;
+import net.minecraft.block.BlockBrewingStand;
+import net.minecraft.block.BlockCauldron;
+import net.minecraft.block.BlockCocoa;
+import net.minecraft.block.BlockDragonEgg;
+import net.minecraft.block.BlockEndPortalFrame;
+import net.minecraft.block.BlockFence;
+import net.minecraft.block.BlockFenceGate;
+import net.minecraft.block.BlockFire;
+import net.minecraft.block.BlockFlowerPot;
+import net.minecraft.block.BlockHopper;
+import net.minecraft.block.BlockPane;
+import net.minecraft.block.BlockRailBase;
+import net.minecraft.block.BlockRedstoneComparator;
+import net.minecraft.block.BlockRedstoneDiode;
+import net.minecraft.block.BlockRedstoneRepeater;
+import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockWall;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 
-// wrapper to native classes to renderId is non-zero so we don't render faces when player camera is inside the block
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
+
+// wrapper to camouflage block
 public class RenderBlockForceField implements ISimpleBlockRenderingHandler {
+	
 	public static int renderId = 0;
 	public static RenderBlockForceField instance = new RenderBlockForceField();
 	
@@ -22,14 +44,14 @@ public class RenderBlockForceField implements ISimpleBlockRenderingHandler {
 	}
 	
 	@Override
-	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
-		TileEntity tileEntity = world.getTileEntity(x, y, z);
+	public boolean renderWorldBlock(IBlockAccess blockAccess, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
+		final TileEntity tileEntity = blockAccess.getTileEntity(x, y, z);
 		if (!(tileEntity instanceof TileEntityForceField)) {
 			return false;
 		}
 		
 		int renderType = -1;
-		Block blockCamouflage = ((TileEntityForceField)tileEntity).cache_blockCamouflage;
+		Block blockCamouflage = ((TileEntityForceField) tileEntity).cache_blockCamouflage;
 		if (blockCamouflage != null && !Dictionary.BLOCKS_NOCAMOUFLAGE.contains(blockCamouflage)) {
 			renderType = blockCamouflage.getRenderType();
 		}

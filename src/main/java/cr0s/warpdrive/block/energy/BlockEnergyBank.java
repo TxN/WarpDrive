@@ -1,11 +1,14 @@
 package cr0s.warpdrive.block.energy;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.api.IWarpTool;
+import cr0s.warpdrive.block.BlockAbstractContainer;
 import cr0s.warpdrive.config.WarpDriveConfig;
 import cr0s.warpdrive.data.EnumComponentType;
 import cr0s.warpdrive.item.ItemComponent;
-import cr0s.warpdrive.item.ItemTuningFork;
+
+import java.util.List;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
@@ -20,12 +23,12 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
 
-import java.util.List;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockEnergyBank extends BlockAbstractContainer {
+	
 	@SideOnly(Side.CLIENT)
 	private IIcon[] icons;
 	
@@ -62,6 +65,7 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister) {
 		icons = new IIcon[12];
@@ -79,9 +83,10 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 		icons[11] = iconRegister.registerIcon("warpdrive:energy/energyBankSuperiorOutput");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		TileEntity tileEntity = world.getTileEntity(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		final TileEntity tileEntity = blockAccess.getTileEntity(x, y, z);
 		if (tileEntity == null || !(tileEntity instanceof TileEntityEnergyBank)) {
 			return icons[3];
 		}
@@ -89,9 +94,10 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 		return icons[3 * ((TileEntityEnergyBank) tileEntity).getTier() + ((TileEntityEnergyBank) tileEntity).getMode(EnumFacing.getFront(side))];
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
-		return icons[metadata * 3 + (side == 1 ? 1 : 2)];
+		return icons[(metadata * 3 + (side == 1 ? 1 : 2)) % icons.length];
 	}
 	
 	@Override
@@ -106,7 +112,8 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 			return (byte) itemStack.getItemDamage();
 		}
 	}
-		
+	
+	
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int side, float hitX, float hitY, float hitZ) {
 		if (world.isRemote) {
@@ -121,7 +128,7 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 		ItemStack itemStackHeld = entityPlayer.getHeldItem();
 		EnumFacing facing = EnumFacing.getFront(side);
 		
-		if (itemStackHeld != null && itemStackHeld.getItem() instanceof ItemTuningFork) {
+		if (itemStackHeld != null && itemStackHeld.getItem() instanceof IWarpTool) {
 			if (entityPlayer.isSneaking()) {
 				tileEntityEnergyBank.setMode(facing, (byte)((tileEntityEnergyBank.getMode(facing) + 2) % 3));
 			} else {
@@ -130,18 +137,18 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 			ItemStack itemStack = new ItemStack(Item.getItemFromBlock(this), 1, world.getBlockMetadata(x, y, z));
 			switch (tileEntityEnergyBank.getMode(facing)) {
 				case TileEntityEnergyBank.MODE_INPUT:
-					WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
+					Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
 						StatCollector.translateToLocalFormatted(itemStack.getUnlocalizedName() + ".name"))
 					    + StatCollector.translateToLocalFormatted("warpdrive.energy.side.changedToInput", facing.name()));
 					return true;
 				case TileEntityEnergyBank.MODE_OUTPUT:
-					WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
+					Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
 						StatCollector.translateToLocalFormatted(itemStack.getUnlocalizedName() + ".name"))
 					    + StatCollector.translateToLocalFormatted("warpdrive.energy.side.changedToOutput", facing.name()));
 					return true;
 				case TileEntityEnergyBank.MODE_DISABLED:
 				default:
-					WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
+					Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
 						StatCollector.translateToLocalFormatted(itemStack.getUnlocalizedName() + ".name"))
 					    + StatCollector.translateToLocalFormatted("warpdrive.energy.side.changedToDisabled", facing.name()));
 					return true;
@@ -164,7 +171,7 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 				
 				if (enumComponentType == null) {
 					// no more upgrades to dismount
-					WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.noUpgradeToDismount"));
+					Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.noUpgradeToDismount"));
 					return true;
 				}
 				
@@ -178,25 +185,25 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 				
 				tileEntityEnergyBank.dismountUpgrade(enumComponentType);
 				// upgrade dismounted
-				WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.dismounted", enumComponentType.name()));
+				Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.dismounted", enumComponentType.name()));
 				return false;
 				
 			}
 			
 		} else if (itemStackHeld == null) {// no sneaking and no item in hand => show status
-			WarpDrive.addChatMessage(entityPlayer, tileEntityEnergyBank.getStatus());
+			Commons.addChatMessage(entityPlayer, tileEntityEnergyBank.getStatus());
 			return true;
 			
 		} else if (enumComponentType != null) {// no sneaking and an upgrade in hand => mounting an upgrade
 			// validate type
 			if (tileEntityEnergyBank.getUpgradeMaxCount(enumComponentType) <= 0) {
 				// invalid upgrade type
-				WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.invalidUpgrade"));
+				Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.invalidUpgrade"));
 				return true;
 			}
 			if (!tileEntityEnergyBank.canUpgrade(enumComponentType)) {
 				// too many upgrades
-				WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.tooManyUpgrades",
+				Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.tooManyUpgrades",
 					tileEntityEnergyBank.getUpgradeMaxCount(enumComponentType)));
 				return true;
 			}
@@ -205,7 +212,7 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 				// validate quantity
 				if (itemStackHeld.stackSize < 1) {
 					// not enough upgrade items
-					WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.notEnoughUpgrades"));
+					Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.notEnoughUpgrades"));
 					return true;
 				}
 				
@@ -216,7 +223,7 @@ public class BlockEnergyBank extends BlockAbstractContainer {
 			// mount the new upgrade item
 			tileEntityEnergyBank.mountUpgrade(enumComponentType);
 			// upgrade mounted
-			WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.mounted", enumComponentType.name()));
+			Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.upgrade.result.mounted", enumComponentType.name()));
 		}
 		
 		return false;

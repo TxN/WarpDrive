@@ -1,5 +1,8 @@
 package cr0s.warpdrive.block.movement;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
@@ -10,12 +13,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
 
 public class BlockShipController extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	private static final int ICON_INACTIVE_SIDE = 0;
@@ -28,28 +32,29 @@ public class BlockShipController extends BlockAbstractContainer {
 		setBlockName("warpdrive.movement.ShipController");
 	}
 	
-	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	@Override
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[11];
 		// Solid textures
-		iconBuffer[ICON_INACTIVE_SIDE] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideInactive");
-		iconBuffer[ICON_BOTTOM] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerBottom");
-		iconBuffer[ICON_TOP] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerTop");
+		iconBuffer[ICON_INACTIVE_SIDE] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideInactive");
+		iconBuffer[ICON_BOTTOM       ] = iconRegister.registerIcon("warpdrive:movement/shipControllerBottom");
+		iconBuffer[ICON_TOP          ] = iconRegister.registerIcon("warpdrive:movement/shipControllerTop");
 		// Animated textures
-		iconBuffer[ICON_SIDE_ACTIVATED    ] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive0");
-		iconBuffer[ICON_SIDE_ACTIVATED + 1] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive1");
-		iconBuffer[ICON_SIDE_ACTIVATED + 2] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive2");
-		iconBuffer[ICON_SIDE_ACTIVATED + 3] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive3");
-		iconBuffer[ICON_SIDE_ACTIVATED + 4] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive4");
-		iconBuffer[ICON_SIDE_ACTIVATED + 5] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive5");
-		iconBuffer[ICON_SIDE_ACTIVATED + 6] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive6");
-		iconBuffer[ICON_SIDE_ACTIVATED + 7] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerSideActive7");
+		iconBuffer[ICON_SIDE_ACTIVATED    ] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive0");
+		iconBuffer[ICON_SIDE_ACTIVATED + 1] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive1");
+		iconBuffer[ICON_SIDE_ACTIVATED + 2] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive2");
+		iconBuffer[ICON_SIDE_ACTIVATED + 3] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive3");
+		iconBuffer[ICON_SIDE_ACTIVATED + 4] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive4");
+		iconBuffer[ICON_SIDE_ACTIVATED + 5] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive5");
+		iconBuffer[ICON_SIDE_ACTIVATED + 6] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive6");
+		iconBuffer[ICON_SIDE_ACTIVATED + 7] = iconRegister.registerIcon("warpdrive:movement/shipControllerSideActive7");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		int metadata  = world.getBlockMetadata(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		final int metadata  = blockAccess.getBlockMetadata(x, y, z);
 		if (side == 0) {
 			return iconBuffer[ICON_BOTTOM];
 		} else if (side == 1) {
@@ -67,6 +72,7 @@ public class BlockShipController extends BlockAbstractContainer {
 		return null;
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		if (side == 0) {
@@ -103,12 +109,12 @@ public class BlockShipController extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityShipController) {
 				if (entityPlayer.isSneaking()) {
-					WarpDrive.addChatMessage(entityPlayer, ((TileEntityShipController)tileEntity).getStatus());
+					Commons.addChatMessage(entityPlayer, ((TileEntityShipController) tileEntity).getStatus());
 				} else {
-					WarpDrive.addChatMessage(entityPlayer, ((TileEntityShipController)tileEntity).attachPlayer(entityPlayer));
+					Commons.addChatMessage(entityPlayer, ((TileEntityShipController) tileEntity).attachPlayer(entityPlayer));
 				}
 				return true;
 			}

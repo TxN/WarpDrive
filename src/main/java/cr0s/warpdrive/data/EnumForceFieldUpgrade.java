@@ -4,9 +4,20 @@ import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.api.IForceFieldUpgrade;
 import cr0s.warpdrive.api.IForceFieldUpgradeEffector;
 import cr0s.warpdrive.network.PacketHandler;
+
+import javax.annotation.Nonnull;
+
+import java.util.HashMap;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.*;
+import net.minecraft.entity.item.EntityBoat;
+import net.minecraft.entity.item.EntityFallingBlock;
+import net.minecraft.entity.item.EntityFireworkRocket;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.EntityMinecart;
+import net.minecraft.entity.item.EntityTNTPrimed;
+import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.EntityGolem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,9 +25,6 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityFireball;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.world.World;
-
-import javax.annotation.Nonnull;
-import java.util.HashMap;
 
 public enum EnumForceFieldUpgrade implements IForceFieldUpgrade, IForceFieldUpgradeEffector {
 	//            Upgrade         - Compatibility -  ----- Value -----  -- Scan speed --  -- Place speed --  --------- Energy costs ---------  comment
@@ -29,7 +37,7 @@ public enum EnumForceFieldUpgrade implements IForceFieldUpgrade, IForceFieldUpgr
 	FUSION       ("fusion"       ,        1,      1,    1.0F,     1.0F,  0.000F,  0.000F,   0.000F,  0.000F, 1000.0F, 0.040F,  0.150F,    0.0F, "value is boolean"),
 	HEATING      ("heating"      ,        3,      1,  100.0F, 10000.0F,  0.000F,  0.000F,   0.900F,  0.900F,  150.0F, 0.300F,  3.000F,   25.0F, "value is heat units"),
 	INVERSION    ("inversion"    ,        1,      0,    1.0F,     1.0F,  1.250F,  1.250F,   0.000F,  0.000F, 1500.0F, 0.150F,  0.150F,   20.0F, "value is boolean"),
-	ITEM_PORT    ("itemPort"     ,        0,      1,    1.0F,    10.0F,  0.000F,  0.000F,   0.950F,  0.900F,   50.0F, 0.120F,  0.500F,    2.0F, "value is boolean"),
+	ITEM_PORT    ("item_port"    ,        0,      1,    1.0F,    10.0F,  0.000F,  0.000F,   0.950F,  0.900F,   50.0F, 0.120F,  0.500F,    2.0F, "value is boolean"),
 	PUMPING      ("pumping"      ,        0,      1, 1000.0F, 50000.0F,  0.800F,  1.000F,   0.400F,  1.000F,  800.0F, 0.150F,  4.500F,    0.0F, "value is viscosity"),
 	RANGE        ("range"        ,        4,      1,    8.0F,    56.0F,  1.150F,  0.800F,   1.150F,  0.800F,   10.0F, 0.300F,  0.750F,   12.0F, "value is bonus blocks"),
 	REPULSION    ("repulsion"    ,        0,      1,    1.0F,     4.0F,  0.000F,  0.000F,   0.000F,  0.000F,   50.0F, 0.150F,  0.000F,    5.0F, "value is acceleration"),
@@ -274,7 +282,7 @@ public enum EnumForceFieldUpgrade implements IForceFieldUpgrade, IForceFieldUpgr
 			v3Direction.scale(0.20D);
 			PacketHandler.sendBeamPacket(world, v3Projector, v3Entity,
 				0.25F, 0.38F, 0.75F, 10, 0, 50);
-			PacketHandler.sendSpawnParticlePacket(world, "snowshovel", v3Entity, v3Direction,
+			PacketHandler.sendSpawnParticlePacket(world, "snowshovel", (byte) 5, v3Entity, v3Direction,
 				0.20F + 0.10F * world.rand.nextFloat(), 0.25F + 0.25F * world.rand.nextFloat(), 0.60F + 0.30F * world.rand.nextFloat(),
 				0.0F, 0.0F, 0.0F, 32);
 			return 10;
@@ -292,7 +300,7 @@ public enum EnumForceFieldUpgrade implements IForceFieldUpgrade, IForceFieldUpgr
 			v3Direction.scale(0.20D);
 			PacketHandler.sendBeamPacket(world, v3Projector, v3Entity,
 				0.95F, 0.52F, 0.38F, 10, 0, 50);
-			PacketHandler.sendSpawnParticlePacket(world, "snowshovel", v3Entity, v3Direction,
+			PacketHandler.sendSpawnParticlePacket(world, "snowshovel", (byte) 5, v3Entity, v3Direction,
 				0.90F + 0.10F * world.rand.nextFloat(), 0.35F + 0.25F * world.rand.nextFloat(), 0.30F + 0.15F * world.rand.nextFloat(),
 				0.0F, 0.0F, 0.0F, 32);
 			/*
@@ -313,7 +321,7 @@ public enum EnumForceFieldUpgrade implements IForceFieldUpgrade, IForceFieldUpgr
 			v3Direction.scale(0.15D);
 			PacketHandler.sendBeamPacket(world, v3Projector, v3Entity,
 				0.35F, 0.57F, 0.87F, 10, 0, 50);
-			PacketHandler.sendSpawnParticlePacket(world, "fireworksSpark", v3Entity, v3Direction,
+			PacketHandler.sendSpawnParticlePacket(world, "fireworksSpark", (byte) 5, v3Entity, v3Direction,
 				0.20F + 0.30F * world.rand.nextFloat(), 0.50F + 0.15F * world.rand.nextFloat(), 0.75F + 0.25F * world.rand.nextFloat(),
 				0.10F + 0.20F * world.rand.nextFloat(), 0.10F + 0.30F * world.rand.nextFloat(), 0.20F + 0.10F * world.rand.nextFloat(),
 				32);

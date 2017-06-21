@@ -1,16 +1,18 @@
 package cr0s.warpdrive.config.structures;
 
-import java.util.Random;
-
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.config.WarpDriveConfig;
 import cr0s.warpdrive.config.structures.Orb.OrbShell;
 import cr0s.warpdrive.world.EntitySphereGen;
 import cr0s.warpdrive.world.EntityStarCore;
 import cr0s.warpdrive.world.WorldGenSmallShip;
 
-public class OrbInstance extends AbstractInstance {
+import java.util.Random;
+
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
+
+public class OrbInstance extends AbstractStructureInstance {
 	protected OrbShell[] orbShells;
 	protected int[] orbShellThicknesses;
 	protected int totalThickness;
@@ -31,7 +33,7 @@ public class OrbInstance extends AbstractInstance {
 			OrbShell orbShell = orb.orbShells[orbShellIndexIn].instantiate(random);
 			if (orbShell != null) {
 				orbShells[orbShellIndexOut] = orbShell;
-				int thickness = randomRange(random, orbShell.minThickness, orbShell.maxThickness);
+				int thickness = Commons.randomRange(random, orbShell.minThickness, orbShell.maxThickness);
 				orbShellThicknesses[orbShellIndexOut] = thickness;
 				totalThickness += thickness;
 				minThickness += orbShell.minThickness;
@@ -60,8 +62,8 @@ public class OrbInstance extends AbstractInstance {
 	}
 	
 	@Override
-	public void WriteToNBT(NBTTagCompound tag) {
-		super.WriteToNBT(tag);
+	public void WriteToNBT(NBTTagCompound tagCompound) {
+		super.WriteToNBT(tagCompound);
 		// TODO not implemented
 	}
 	
@@ -75,7 +77,7 @@ public class OrbInstance extends AbstractInstance {
 		int y2 = Math.min(WarpDriveConfig.SPACE_GENERATOR_Y_MAX_BORDER - totalThickness,
 			  Math.max(y, WarpDriveConfig.SPACE_GENERATOR_Y_MIN_BORDER + totalThickness));
 		if (hasShip) {
-			new WorldGenSmallShip(random.nextFloat() < 0.2F).generate(world, random, x, y2, z);
+			new WorldGenSmallShip(random.nextFloat() < 0.2F, false).generate(world, random, x, y2, z);
 		}
 		EntitySphereGen entitySphereGen = new EntitySphereGen(world, x, y2, z, this, !hasShip);
 		world.spawnEntityInWorld(entitySphereGen);

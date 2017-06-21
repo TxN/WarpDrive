@@ -1,9 +1,11 @@
 package cr0s.warpdrive.block;
 
-import cpw.mods.fml.common.Optional;
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.api.IBlockBase;
+import cr0s.warpdrive.api.IBlockUpdateDetector;
 import cr0s.warpdrive.config.WarpDriveConfig;
-import defense.api.IEMPBlock;
-import defense.api.IExplosion;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -16,14 +18,16 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.api.IBlockUpdateDetector;
+
+import cpw.mods.fml.common.Optional;
 import net.minecraftforge.common.util.ForgeDirection;
 
 @Optional.InterfaceList({
-    @Optional.Interface(iface = "defense.api.IEMPBlock", modid = "DefenseTech")
+	@Optional.Interface(iface = "defense.api.IEMPBlock", modid = "DefenseTech"),
+	@Optional.Interface(iface = "resonant.api.explosion.IEMPBlock", modid = "icbmclassic")
 })
-public abstract class BlockAbstractContainer extends BlockContainer implements IEMPBlock {
+public abstract class BlockAbstractContainer extends BlockContainer implements IBlockBase, defense.api.IEMPBlock, resonant.api.explosion.IEMPBlock {
+	
 	protected boolean isRotating = false;
 	protected boolean hasSubBlocks = false;
 	
@@ -48,32 +52,8 @@ public abstract class BlockAbstractContainer extends BlockContainer implements I
 	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entityLiving, ItemStack itemStack) {
 		super.onBlockPlacedBy(world, x, y, z, entityLiving, itemStack);
 		if (isRotating) {
-			if (entityLiving != null) {
-				int metadata;
-				if (entityLiving.rotationPitch > 65) {
-					metadata = 1;
-				} else if (entityLiving.rotationPitch < -65) {
-					metadata = 0;
-				} else {
-					int direction = Math.round(entityLiving.rotationYaw / 90.0F) & 3;
-					switch (direction) {
-						case 0:
-							metadata = 2;
-							break;
-						case 1:
-							metadata = 5;
-							break;
-						case 2:
-							metadata = 3;
-							break;
-						case 3:
-							metadata = 4;
-							break;
-						default:
-							metadata = 2;
-							break;
-					}
-				}
+			final int metadata = Commons.getFacingFromEntity(entityLiving);
+			if (metadata >= 0 && metadata <= 15) {
 				world.setBlockMetadataWithNotify(x, y, z, metadata, 3);
 			}
 		}
@@ -125,41 +105,12 @@ public abstract class BlockAbstractContainer extends BlockContainer implements I
 	
 	@Override
 	public boolean rotateBlock(World world, int x, int y, int z, ForgeDirection axis) {
-		world.setBlockMetadataWithNotify(x, y, z, axis.ordinal(), 3);
-		return true;
-	}
-	
-	// FIXME untested
-	/*
-	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int side, float hitX, float hitY, float hitZ) {
-		if (world.isRemote) {
-			return false;
+		if (isRotating) {
+			world.setBlockMetadataWithNotify(x, y, z, axis.ordinal(), 3);
+			return true;
 		}
-		
-		boolean hasResponse = false;
-		TileEntity tileEntity = world.getTileEntity(x, y, z);
-		if (tileEntity instanceof IUpgradable) {
-			IUpgradable upgradable = (IUpgradable) tileEntity;
-			ItemStack itemStack = entityPlayer.inventory.getCurrentItem();
-			if (itemStack != null) {
-				Item i = itemStack.getItem();
-				if (i instanceof ItemWarpUpgrade) {
-					if (upgradable.takeUpgrade(EnumUpgradeTypes.values()[itemStack.getItemDamage()], false)) {
-						if (!entityPlayer.capabilities.isCreativeMode)
-							entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
-						entityPlayer.addChatMessage("Upgrade accepted");
-					} else {
-						entityPlayer.addChatMessage("Upgrade declined");
-					}
-					hasResponse = true;
-				}
-			}
-		}
-		
-		return hasResponse;
+		return false;
 	}
-	/**/
 	
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, Block block) {
@@ -172,9 +123,24 @@ public abstract class BlockAbstractContainer extends BlockContainer implements I
 	
 	@Override
 	@Optional.Method(modid = "DefenseTech")
-	public void onEMP(World world, int x, int y, int z, IExplosion explosiveEMP) {
+	public void onEMP(World world, int x, int y, int z, defense.api.IExplosion explosiveEMP) {
 		if (WarpDriveConfig.LOGGING_WEAPON) {
-			WarpDrive.logger.info("EMP received at " + x + " " + y + " " + z + " from " + explosiveEMP + " with energy " + explosiveEMP.getEnergy() + " and radius " + explosiveEMP.getRadius());
+			WarpDrive.logger.info(String.format("EMP received @ DIM%d (%d %d %d) from %s with energy %d and radius %.1f",
+			                                    world.provider.dimensionId, x, y, z,
+			                                    explosiveEMP, explosiveEMP.getEnergy(), explosiveEMP.getRadius()));
+		}
+		// EMP tower = 3k Energy, 60 radius
+		// EMP explosive = 3k Energy, 50 radius
+		onEMP(world, x, y, z, explosiveEMP.getRadius() / 100.0F);
+	}
+	
+	@Override
+	@Optional.Method(modid = "icbmclassic")
+	public void onEMP(World world, int x, int y, int z, resonant.api.explosion.IExplosion explosiveEMP) {
+		if (WarpDriveConfig.LOGGING_WEAPON) {
+			WarpDrive.logger.info(String.format("EMP received @ DIM%d (%d %d %d) from %s with energy %d and radius %.1f",
+			                                    world.provider.dimensionId, x, y, z,
+			                                    explosiveEMP, explosiveEMP.getEnergy(), explosiveEMP.getRadius()));
 		}
 		// EMP tower = 3k Energy, 60 radius
 		// EMP explosive = 3k Energy, 50 radius
@@ -191,11 +157,13 @@ public abstract class BlockAbstractContainer extends BlockContainer implements I
 		}
 	}
 	
+	@Override
 	public byte getTier(final ItemStack itemStack) {
 		return 1;
 	}
 	
-	EnumRarity getRarity(final ItemStack itemStack, final EnumRarity rarity) {
+	@Override
+	public EnumRarity getRarity(final ItemStack itemStack, final EnumRarity rarity) {
 		switch (getTier(itemStack)) {
 			case 0:	return EnumRarity.epic;
 			case 1:	return EnumRarity.common;

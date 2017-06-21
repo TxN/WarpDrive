@@ -3,6 +3,8 @@ death.attack.warpdrive.asphyxia=%1$s est mort asphyxié
 death.attack.warpdrive.asphyxia.player=%1$s est mort asphyxié grace à %2$s
 death.attack.warpdrive.cold=%1$s est mort de froid
 death.attack.warpdrive.cold.player=%1$s est mort congelé par %2$s 
+death.attack.warpdrive.irradiation=%1$s est mort irradié
+death.attack.warpdrive.irradiation.player=%1$s a reçu une dose létale d'irration par %2$s 
 death.attack.warpdrive.laser=%1$s est d'avoir croisé le faisceau
 death.attack.warpdrive.laser.player=%1$s a été laserifié par %2$s
 death.attack.warpdrive.shock=%1$s est mort electrocuté
@@ -11,6 +13,8 @@ death.attack.warpdrive.teleportation=%1$s n'a pas survécu à sa rematérialisat
 death.attack.warpdrive.teleportation.player=%1$s a été tué par %2$s durant sa rematérialisation
 death.attack.warpdrive.warm=%1$s est mort de brûlure sévère
 death.attack.warpdrive.warm.player=%1$s a été cuit par %2$s
+
+itemGroup.warpdrive=WarpDrive
 
 item.warpdrive.crafting.Malformed.name=Item invalide
 item.warpdrive.crafting.EmeraldCrystal.name=Cristal d'émeraude accordé
@@ -37,7 +41,14 @@ item.warpdrive.crafting.ElectromagneticProjector.name=Projecteur électromagnét
 item.warpdrive.crafting.Superconductor.name=Superconducteur
 
 item.warpdrive.armor.AirCanisterFull.name=Cartouche d'air
-item.warpdrive.armor.Helmet.name=Casque warp
+item.warpdrive.armor.helmet.name=Casque warp
+item.warpdrive.armor.chestplate.name=Plastron warp
+item.warpdrive.armor.leggings.name=Jambières warp
+item.warpdrive.armor.boots.name=Bottes warp
+
+item.warpdrive.atomic.electromagnetic_cell.name=Cage électromagnétique
+item.warpdrive.atomic.electromagnetic_cell.tooltip.empty=Utilise un collisionneur de particules pour me remplir!
+item.warpdrive.atomic.electromagnetic_cell.tooltip.filled=Contient %1$s Å³ de %2$s
 
 item.warpdrive.energy.IC2reactorLaserFocus.name=Focus laser pour réacteur IC2
 
@@ -75,12 +86,12 @@ item.warpdrive.forcefield.upgrade.heating.name=Augmentation de chauffage
 item.warpdrive.forcefield.upgrade.heating.tooltip=Chauffe les blocs et entités. Ajoutes en d'autres pour accroître l'effet. Ajoute une inversion pour un effet de zone ou terraformation.
 item.warpdrive.forcefield.upgrade.inversion.name=Augmentation d'inversion
 item.warpdrive.forcefield.upgrade.inversion.tooltip=§4En cours d'implémentation\nModifie la zone d'effet de surface en volume. Utilise le pour cibler des entités à l'intérieur du champ ou effectuer une terraformation.
-item.warpdrive.forcefield.upgrade.itemPort.name=Augmentation de port d'item
-item.warpdrive.forcefield.upgrade.itemPort.tooltip=S'interface avec des conteneurs attachés. Ajoutes une Augmentation d'attraction pour collecter les items du Casseur de block. Ajoutes une augmentation de répulsion pour fournir les blocks à placer avec l'augmentation de stabilisation.
+item.warpdrive.forcefield.upgrade.item_port.name=Augmentation de port d'item
+item.warpdrive.forcefield.upgrade.item_port.tooltip=S'interface avec des conteneurs attachés. Ajoutes une Augmentation d'attraction pour collecter les items du Casseur de block. Ajoutes une augmentation de répulsion pour fournir les blocks à placer avec l'augmentation de stabilisation.
 item.warpdrive.forcefield.upgrade.pumping.name=Augmentation de pompage
 item.warpdrive.forcefield.upgrade.pumping.tooltip=§4En cours d'implémentation\nPompe des liquides à l'emplacement du champ de force. Ajoute d'autres pompes pour supporter des fluides plus visceux tels que la lave.
 item.warpdrive.forcefield.upgrade.range.name=Augmentation de portée
-item.warpdrive.forcefield.upgrade.range.tooltip=Augmente la portée maximum du projecteur
+item.warpdrive.forcefield.upgrade.range.tooltip=Augmente la taille maximum du projecteur
 item.warpdrive.forcefield.upgrade.repulsion.name=Augmentation de répulsion
 item.warpdrive.forcefield.upgrade.repulsion.tooltip=Pousse les items à placer par l'augmentation de stabilisation. Ajoutes en d'autres pour affecter les items, animaux passifs, monstres et éventuellement les joueurs. Ajoute une inversion pour un effet de zone ou terraformation.
 item.warpdrive.forcefield.upgrade.rotation.name=Augmentation de rotation
@@ -108,7 +119,7 @@ item.warpdrive.upgrade.Energy.name=Amélioration d'énergie
 
 
 item.warpdrive.tool.crystalToken.name=Crystal jeton
-item.warpdrive.tool.crystalToken.tooltip=Vaisseau '%1$s' encapsulé dans un crystal\n§bEntre dans le champ du scanner§7 pour construire ton vaisseau
+item.warpdrive.tool.crystalToken.tooltip=Vaisseau '%1$s' encapsulé dans un crystal\n§bEntre dans le champ rouge du constructeur§7 pour réclamer ton vaisseau
 item.warpdrive.tool.crystalToken0.name=Crystal jeton #0
 item.warpdrive.tool.crystalToken1.name=Crystal jeton #1
 item.warpdrive.tool.crystalToken2.name=Crystal jeton #2
@@ -117,44 +128,84 @@ item.warpdrive.tool.crystalToken4.name=Crystal jeton #4
 item.warpdrive.tool.crystalToken5.name=Crystal jeton #5
 
 
-item.warpdrive.tool.TuningFork.name=Diapason
-item.warpdrive.tool.TuningFork.white.name=Diapason blanc
-item.warpdrive.tool.TuningFork.orange.name=Diapason orange
-item.warpdrive.tool.TuningFork.magenta.name=Diapason magenta
-item.warpdrive.tool.TuningFork.lightBlue.name=Diapason bleu clair
-item.warpdrive.tool.TuningFork.yellow.name=Diapason jaune
-item.warpdrive.tool.TuningFork.lime.name=Diapason citron vert
-item.warpdrive.tool.TuningFork.pink.name=Diapason rose
-item.warpdrive.tool.TuningFork.gray.name=Diapason gris
-item.warpdrive.tool.TuningFork.silver.name=Diapason argent
-item.warpdrive.tool.TuningFork.cyan.name=Diapason cyan
-item.warpdrive.tool.TuningFork.purple.name=Diapason violet
-item.warpdrive.tool.TuningFork.blue.name=Diapason bleu
-item.warpdrive.tool.TuningFork.brown.name=Diapason marron
-item.warpdrive.tool.TuningFork.green.name=Diapason vert
-item.warpdrive.tool.TuningFork.red.name=Diapason rouge
-item.warpdrive.tool.TuningFork.black.name=Diapason noir
+item.warpdrive.tool.tuning_driver.video_channel.name=Ajusteur de canal vidéo
+item.warpdrive.tool.tuning_driver.beam_frequency.name=Ajusteur de fréquence de faisceau
+item.warpdrive.tool.tuning_driver.control_channel.name=Ajusteur de canal de contrôle
 
-item.warpdrive.tool.TuningFork.tooltip.videoChannel=Canal vidéo ajusté à %1$d
-item.warpdrive.tool.TuningFork.tooltip.beamFrequency=Fréquence de faisceau ajustée à %1$d
-item.warpdrive.tool.TuningFork.tooltip.usage=§bCliques droit sur un block§r pour ajuster ses cristaux\n§bAccroupi§r pour ajuster les cristaux alternatifs
-item.warpdrive.tool.TuningFork.use.setVideoChannel=%1$s est désormais accordé au Canal vidéo %2$d
-item.warpdrive.tool.TuningFork.use.setBeamFrequency=%1$s est désormais accordé à la Fréquence de faisceau %2$d
+item.warpdrive.tool.tuning_driver.tooltip.usage=§bCliques droit sur un block§r pour ajuster ses cristaux\n§bAccroupi§r pour récupérer sa valeur\n§bCliques droit en l'air§r pour lire pour changer de mode
 
 
-tile.warpdrive.passive.Air.name=Bloc d'air
-tile.warpdrive.passive.Energized.name=Block energisé
-tile.warpdrive.passive.Gas.name=Bloc de gaz
+item.warpdrive.tool.tuning_fork.name=Diapason
+item.warpdrive.tool.tuning_fork.white.name=Diapason blanc
+item.warpdrive.tool.tuning_fork.orange.name=Diapason orange
+item.warpdrive.tool.tuning_fork.magenta.name=Diapason magenta
+item.warpdrive.tool.tuning_fork.lightBlue.name=Diapason bleu clair
+item.warpdrive.tool.tuning_fork.yellow.name=Diapason jaune
+item.warpdrive.tool.tuning_fork.lime.name=Diapason citron vert
+item.warpdrive.tool.tuning_fork.pink.name=Diapason rose
+item.warpdrive.tool.tuning_fork.gray.name=Diapason gris
+item.warpdrive.tool.tuning_fork.silver.name=Diapason argent
+item.warpdrive.tool.tuning_fork.cyan.name=Diapason cyan
+item.warpdrive.tool.tuning_fork.purple.name=Diapason violet
+item.warpdrive.tool.tuning_fork.blue.name=Diapason bleu
+item.warpdrive.tool.tuning_fork.brown.name=Diapason marron
+item.warpdrive.tool.tuning_fork.green.name=Diapason vert
+item.warpdrive.tool.tuning_fork.red.name=Diapason rouge
+item.warpdrive.tool.tuning_fork.black.name=Diapason noir
+
+item.warpdrive.tool.tuning_fork.tooltip.usage=§bCliques droit sur un block§r pour ajuster ses cristaux\n§bAccroupi§r pour ajuster les cristaux alternatifs
+
+
+tile.warpdrive.decoration.decorative.energized.name=Block energisé
+tile.warpdrive.decoration.decorative.network.name=Bloc de réseau
+tile.warpdrive.decoration.decorative.plain.name=Bloc ordinaire
+tile.warpdrive.decoration.gas.name=Bloc de gaz
+
 tile.warpdrive.passive.IridiumBlock.name=Bloc d'iridium
 tile.warpdrive.passive.HighlyAdvancedMachine.name=Bloc de machine hyper avancé
-tile.warpdrive.passive.Network.name=Bloc de réseau
-tile.warpdrive.passive.Plain.name=Bloc ordinaire
 tile.warpdrive.passive.TransportBeacon.name=Balise de transport
 
-tile.warpdrive.machines.AirGenerator.name=Générateur d'air
 tile.warpdrive.machines.ChunkLoader.name=Chargeur de chunk
 tile.warpdrive.machines.Laser.name=Laser
 tile.warpdrive.machines.LaserMedium.name=Milieu amplificateur
+
+tile.warpdrive.atomic.accelerator_controller.name=Controlleur d'accélérateurs
+tile.warpdrive.atomic.accelerator_controller.tooltip=Contrôle un ou plusieurs accélérateurs de particules.\nDoit être placé à coté d'un électroaimant.
+tile.warpdrive.atomic.accelerator_control_point.name=Point de contrôle d'accélérateur
+tile.warpdrive.atomic.accelerator_control_point.tooltip=Contrôle un noeud de l'accélérateur tel que collisionneur, entrée et sortie.\nDoit être placé à exactement 1 block de distance d'une coquille sous vide.\nStocke les résultats dans tout conteneur directement connecté.
+tile.warpdrive.atomic.chiller1.name=Refroidisseur élémentaire
+tile.warpdrive.atomic.chiller1.tooltip=Refroidit progressivement les électroaimants d'un même accélérateur de particules.\nDoit être placé à coté d'un électroaimant.
+tile.warpdrive.atomic.chiller2.name=Refroidisseur avancé
+tile.warpdrive.atomic.chiller2.tooltip=Refroidit progressivement les électroaimants d'un même accélérateur de particules.\nDoit être placé à coté d'un électroaimant.
+tile.warpdrive.atomic.chiller3.name=Refroidisseur supérieur
+tile.warpdrive.atomic.chiller3.tooltip=Refroidit progressivement les électroaimants d'un même accélérateur de particules.\nDoit être placé à coté d'un électroaimant.
+tile.warpdrive.atomic.electromagnet1.plain.name=Electroaimant élémentaire
+tile.warpdrive.atomic.electromagnet1.plain.tooltip=Accélère, focalise et oriente les particules dans la coquille sous vide attachée.
+tile.warpdrive.atomic.electromagnet1.glass.name=Vitre d'électroaiment élémentaire
+tile.warpdrive.atomic.electromagnet1.glass.tooltip=Variante transparente de l'électroaimant.
+tile.warpdrive.atomic.electromagnet2.plain.name=Electroaimant avancé
+tile.warpdrive.atomic.electromagnet2.plain.tooltip=Accélère, focalise et oriente les particules dans la coquille sous vide attachée.
+tile.warpdrive.atomic.electromagnet2.glass.name=Vitre d'électroaimant avancé
+tile.warpdrive.atomic.electromagnet2.glass.tooltip=Variante transparente de l'électroaimant.
+tile.warpdrive.atomic.electromagnet3.plain.name=Electroaimant supérieur
+tile.warpdrive.atomic.electromagnet3.plain.tooltip=Accélère, focalise et oriente les particules dans la coquille sous vide attachée.
+tile.warpdrive.atomic.electromagnet3.glass.name=Vite d'électroaimant supérieur
+tile.warpdrive.atomic.electromagnet3.glass.tooltip=Variante transparente de l'électroaimant.
+tile.warpdrive.atomic.particles_collider.name=Collisionneur de particules
+tile.warpdrive.atomic.particles_collider.tooltip=Dévie les particules pour qu'elles entrent en collision frontale ou contre une cible.\nRequiert 12 blocs et un Point de contrôle d'accélérateur qui collectera les résultats.
+tile.warpdrive.atomic.particles_injector.name=Injecteur de particules
+tile.warpdrive.atomic.particles_injector.tooltip=Injecte des items ou particules depuis un conteneur attaché dans un accélérateur élémentaire.
+tile.warpdrive.atomic.void_shell_plain.name=Coquille sous vide
+tile.warpdrive.atomic.void_shell_plain.tooltip=Fournit 2 canaux de parcours des particules dans un accélérateur.\nSe connecte uniquement horizontalement avec d'autres Coquille sous vide.
+tile.warpdrive.atomic.void_shell_glass.name=Vitre de coquille sous vide
+tile.warpdrive.atomic.void_shell_glass.tooltip=Variante transparente de la Coquille sous vide permettant de voir les particules en mouvement.
+
+tile.warpdrive.breathing.air.name=Bloc d'air
+tile.warpdrive.breathing.air_generator.name=Générateur d'air
+tile.warpdrive.breathing.air_generator1.name=Générateur d'air élémentaire
+tile.warpdrive.breathing.air_generator2.name=Générateur d'air avancé
+tile.warpdrive.breathing.air_generator3.name=Générateur d'air supérieur
+tile.warpdrive.breathing.air_shield.name=Bouclier d'air d'énergie
 
 tile.warpdrive.building.ShipScanner.name=Scanneur de vaisseau
 
@@ -209,7 +260,9 @@ tile.warpdrive.forcefield.relay3.tooltip=Supporte jusqu'à 1 augmentation de cha
 
 tile.warpdrive.movement.Lift.name=Ascenseur
 tile.warpdrive.movement.ShipController.name=Controlleur de vaisseau
+tile.warpdrive.movement.ShipController.tooltip=Défini l'avant du vaisseau par rapport au coeur. Attache un ordinateur pour ouvrir l'interface utilisateur.\nDoit être placé horizontalement directement à coté du Coeur de vaisseau.
 tile.warpdrive.movement.ShipCore.name=Coeur de vaisseau
+tile.warpdrive.movement.ShipCore.tooltip=Défini le centre du vaisseau par rapport au controlleur. Connecte une source d'énergie pour charger le coeur\nDoit être placé horizontalement directement à coté du Controlleur de vaisseau.
 tile.warpdrive.movement.Transporter.name=Transporteur
 
 tile.warpdrive.weapon.LaserCamera.name=Laser + Caméra
@@ -251,6 +304,40 @@ tile.warpdrive.hull1.glass.green.name=Vitre de coque élémentaire verte
 tile.warpdrive.hull1.glass.red.name=Vitre de coque élémentaire rouge
 tile.warpdrive.hull1.glass.black.name=Vitre de coque élémentaire noire
 
+tile.warpdrive.hull1.omnipanel.white.name=Omnipanneau de coque élémentaire blanche
+tile.warpdrive.hull1.omnipanel.orange.name=Omnipanneau de coque élémentaire orange
+tile.warpdrive.hull1.omnipanel.magenta.name=Omnipanneau de coque élémentaire magenta
+tile.warpdrive.hull1.omnipanel.lightBlue.name=Omnipanneau de coque élémentaire bleu claire
+tile.warpdrive.hull1.omnipanel.yellow.name=Omnipanneau de coque élémentaire jaune
+tile.warpdrive.hull1.omnipanel.lime.name=Omnipanneau de coque élémentaire citron vert
+tile.warpdrive.hull1.omnipanel.pink.name=Omnipanneau de coque élémentaire rose
+tile.warpdrive.hull1.omnipanel.gray.name=Omnipanneau de coque élémentaire grise
+tile.warpdrive.hull1.omnipanel.silver.name=Omnipanneau de coque élémentaire argentée
+tile.warpdrive.hull1.omnipanel.cyan.name=Omnipanneau de coque élémentaire cyan
+tile.warpdrive.hull1.omnipanel.purple.name=Omnipanneau de coque élémentaire violette
+tile.warpdrive.hull1.omnipanel.blue.name=Omnipanneau de coque élémentaire bleue
+tile.warpdrive.hull1.omnipanel.brown.name=Omnipanneau de coque élémentaire marron
+tile.warpdrive.hull1.omnipanel.green.name=Omnipanneau de coque élémentaire verte
+tile.warpdrive.hull1.omnipanel.red.name=Omnipanneau de coque élémentaire rouge
+tile.warpdrive.hull1.omnipanel.black.name=Omnipanneau de coque élémentaire noire
+
+tile.warpdrive.hull1.slab.white.name=Dalle de coque élémentaire blanche
+tile.warpdrive.hull1.slab.orange.name=Dalle de coque élémentaire orange
+tile.warpdrive.hull1.slab.magenta.name=Dalle de coque élémentaire magenta
+tile.warpdrive.hull1.slab.lightBlue.name=Dalle de coque élémentaire bleu claire
+tile.warpdrive.hull1.slab.yellow.name=Dalle de coque élémentaire jaune
+tile.warpdrive.hull1.slab.lime.name=Dalle de coque élémentaire citron vert
+tile.warpdrive.hull1.slab.pink.name=Dalle de coque élémentaire rose
+tile.warpdrive.hull1.slab.gray.name=Dalle de coque élémentaire grise
+tile.warpdrive.hull1.slab.silver.name=Dalle de coque élémentaire argentée
+tile.warpdrive.hull1.slab.cyan.name=Dalle de coque élémentaire cyan
+tile.warpdrive.hull1.slab.purple.name=Dalle de coque élémentaire violette
+tile.warpdrive.hull1.slab.blue.name=Dalle de coque élémentaire bleue
+tile.warpdrive.hull1.slab.brown.name=Dalle de coque élémentaire marron
+tile.warpdrive.hull1.slab.green.name=Dalle de coque élémentaire verte
+tile.warpdrive.hull1.slab.red.name=Dalle de coque élémentaire rouge
+tile.warpdrive.hull1.slab.black.name=Dalle de coque élémentaire noire
+
 tile.warpdrive.hull1.stairs.white.name=Escalier de coque élémentaire blanche
 tile.warpdrive.hull1.stairs.orange.name=Escalier de coque élémentaire orange
 tile.warpdrive.hull1.stairs.magenta.name=Escalier de coque élémentaire magenta
@@ -267,6 +354,7 @@ tile.warpdrive.hull1.stairs.brown.name=Escalier de coque élémentaire marron
 tile.warpdrive.hull1.stairs.green.name=Escalier de coque élémentaire verte
 tile.warpdrive.hull1.stairs.red.name=Escalier de coque élémentaire rouge
 tile.warpdrive.hull1.stairs.black.name=Escalier de coque élémentaire noire
+
 
 tile.warpdrive.hull2.plain.white.name=Coque avancée blanche
 tile.warpdrive.hull2.plain.orange.name=Coque avancée orange
@@ -302,6 +390,40 @@ tile.warpdrive.hull2.glass.green.name=Vitre de coque avancée verte
 tile.warpdrive.hull2.glass.red.name=Vitre de coque avancée rouge
 tile.warpdrive.hull2.glass.black.name=Vitre de coque avancée noire
 
+tile.warpdrive.hull2.omnipanel.white.name=Omnipanneau de coque avancée blanche
+tile.warpdrive.hull2.omnipanel.orange.name=Omnipanneau de coque avancée orange
+tile.warpdrive.hull2.omnipanel.magenta.name=Omnipanneau de coque avancée magenta
+tile.warpdrive.hull2.omnipanel.lightBlue.name=Omnipanneau de coque avancée bleu claire
+tile.warpdrive.hull2.omnipanel.yellow.name=Omnipanneau de coque avancée jaune
+tile.warpdrive.hull2.omnipanel.lime.name=Omnipanneau de coque avancée citron vert
+tile.warpdrive.hull2.omnipanel.pink.name=Omnipanneau de coque avancée rose
+tile.warpdrive.hull2.omnipanel.gray.name=Omnipanneau de coque avancée grise
+tile.warpdrive.hull2.omnipanel.silver.name=Omnipanneau de coque avancée argentée
+tile.warpdrive.hull2.omnipanel.cyan.name=Omnipanneau de coque avancée cyan
+tile.warpdrive.hull2.omnipanel.purple.name=Omnipanneau de coque avancée violette
+tile.warpdrive.hull2.omnipanel.blue.name=Omnipanneau de coque avancée bleue
+tile.warpdrive.hull2.omnipanel.brown.name=Omnipanneau de coque avancée marron
+tile.warpdrive.hull2.omnipanel.green.name=Omnipanneau de coque avancée verte
+tile.warpdrive.hull2.omnipanel.red.name=Omnipanneau de coque avancée rouge
+tile.warpdrive.hull2.omnipanel.black.name=Omnipanneau de coque avancée noire
+
+tile.warpdrive.hull2.slab.white.name=Dalle de coque avancée blanche
+tile.warpdrive.hull2.slab.orange.name=Dalle de coque avancée orange
+tile.warpdrive.hull2.slab.magenta.name=Dalle de coque avancée magenta
+tile.warpdrive.hull2.slab.lightBlue.name=Dalle de coque avancée bleu claire
+tile.warpdrive.hull2.slab.yellow.name=Dalle de coque avancée jaune
+tile.warpdrive.hull2.slab.lime.name=Dalle de coque avancée citron vert
+tile.warpdrive.hull2.slab.pink.name=Dalle de coque avancée rose
+tile.warpdrive.hull2.slab.gray.name=Dalle de coque avancée grise
+tile.warpdrive.hull2.slab.silver.name=Dalle de coque avancée argentée
+tile.warpdrive.hull2.slab.cyan.name=Dalle de coque avancée cyan
+tile.warpdrive.hull2.slab.purple.name=Dalle de coque avancée violette
+tile.warpdrive.hull2.slab.blue.name=Dalle de coque avancée bleue
+tile.warpdrive.hull2.slab.brown.name=Dalle de coque avancée marron
+tile.warpdrive.hull2.slab.green.name=Dalle de coque avancée verte
+tile.warpdrive.hull2.slab.red.name=Dalle de coque avancée rouge
+tile.warpdrive.hull2.slab.black.name=Dalle de coque avancée noire
+
 tile.warpdrive.hull2.stairs.white.name=Escalier de coque avancée blanche
 tile.warpdrive.hull2.stairs.orange.name=Escalier de coque avancée orange
 tile.warpdrive.hull2.stairs.magenta.name=Escalier de coque avancée magenta
@@ -318,6 +440,7 @@ tile.warpdrive.hull2.stairs.brown.name=Escalier de coque avancée marron
 tile.warpdrive.hull2.stairs.green.name=Escalier de coque avancée verte
 tile.warpdrive.hull2.stairs.red.name=Escalier de coque avancée rouge
 tile.warpdrive.hull2.stairs.black.name=Escalier de coque avancée noire
+
 
 tile.warpdrive.hull3.plain.white.name=Coque supérieure blanche
 tile.warpdrive.hull3.plain.orange.name=Coque supérieure orange
@@ -353,6 +476,40 @@ tile.warpdrive.hull3.glass.green.name=Vitre de coque supérieure verte
 tile.warpdrive.hull3.glass.red.name=Vitre de coque supérieure rouge
 tile.warpdrive.hull3.glass.black.name=Vitre de coque supérieure noire
 
+tile.warpdrive.hull3.omnipanel.white.name=Omnipanneau de coque supérieure blanche
+tile.warpdrive.hull3.omnipanel.orange.name=Omnipanneau de coque supérieure orange
+tile.warpdrive.hull3.omnipanel.magenta.name=Omnipanneau de coque supérieure magenta
+tile.warpdrive.hull3.omnipanel.lightBlue.name=Omnipanneau de coque supérieure bleu claire
+tile.warpdrive.hull3.omnipanel.yellow.name=Omnipanneau de coque supérieure jaune
+tile.warpdrive.hull3.omnipanel.lime.name=Omnipanneau de coque supérieure citron vert
+tile.warpdrive.hull3.omnipanel.pink.name=Omnipanneau de coque supérieure rose
+tile.warpdrive.hull3.omnipanel.gray.name=Omnipanneau de coque supérieure grise
+tile.warpdrive.hull3.omnipanel.silver.name=Omnipanneau de coque supérieure argentée
+tile.warpdrive.hull3.omnipanel.cyan.name=Omnipanneau de coque supérieure cyan
+tile.warpdrive.hull3.omnipanel.purple.name=Omnipanneau de coque supérieure violette
+tile.warpdrive.hull3.omnipanel.blue.name=Omnipanneau de coque supérieure bleue
+tile.warpdrive.hull3.omnipanel.brown.name=Omnipanneau de coque supérieure marron
+tile.warpdrive.hull3.omnipanel.green.name=Omnipanneau de coque supérieure verte
+tile.warpdrive.hull3.omnipanel.red.name=Omnipanneau de coque supérieure rouge
+tile.warpdrive.hull3.omnipanel.black.name=Omnipanneau de coque supérieure noire
+
+tile.warpdrive.hull3.slab.white.name=Dalle de coque supérieure blanche
+tile.warpdrive.hull3.slab.orange.name=Dalle de coque supérieure orange
+tile.warpdrive.hull3.slab.magenta.name=Dalle de coque supérieure magenta
+tile.warpdrive.hull3.slab.lightBlue.name=Dalle de coque supérieure bleu claire
+tile.warpdrive.hull3.slab.yellow.name=Dalle de coque supérieure jaune
+tile.warpdrive.hull3.slab.lime.name=Dalle de coque supérieure citron vert
+tile.warpdrive.hull3.slab.pink.name=Dalle de coque supérieure rose
+tile.warpdrive.hull3.slab.gray.name=Dalle de coque supérieure grise
+tile.warpdrive.hull3.slab.silver.name=Dalle de coque supérieure argentée
+tile.warpdrive.hull3.slab.cyan.name=Dalle de coque supérieure cyan
+tile.warpdrive.hull3.slab.purple.name=Dalle de coque supérieure violette
+tile.warpdrive.hull3.slab.blue.name=Dalle de coque supérieure bleue
+tile.warpdrive.hull3.slab.brown.name=Dalle de coque supérieure marron
+tile.warpdrive.hull3.slab.green.name=Dalle de coque supérieure verte
+tile.warpdrive.hull3.slab.red.name=Dalle de coque supérieure rouge
+tile.warpdrive.hull3.slab.black.name=Dalle de coque supérieure noire
+
 tile.warpdrive.hull3.stairs.white.name=Escalier de coque supérieure blanche
 tile.warpdrive.hull3.stairs.orange.name=Escalier de coque supérieure orange
 tile.warpdrive.hull3.stairs.magenta.name=Escalier de coque supérieure magenta
@@ -385,9 +542,29 @@ warpdrive.energy.side.changedToInput=Le coté %1$s est en mode Réception d'éne
 warpdrive.energy.side.changedToOutput=Le coté %1$s est en mode Emission d'énergie!
 warpdrive.energy.side.changedToDisabled=Le coté %1$s side est en mode Inactif!
 
-warpdrive.beamFrequency.statusLine.valid=La fréquence de faisceau %1$d est valide.
-warpdrive.beamFrequency.statusLine.invalid=§cLa fréquence de faisceau %1$d est invalide.
-warpdrive.beamFrequency.statusLine.undefined=§7La fréquence de faisceau est non définie.\n§bUtilises un Diapason§f pour l'ajuster.
+warpdrive.accelerator.guide.lowPower_noStorage=La capacité de stockage d'énergie est insuffisante; Nous avons besoin d'au moins %1$d pour continuer mais ne pouvons stocker que %2$d
+warpdrive.accelerator.guide.lowPower_accelerating=Nous sommes à court d'énergie Capitaine, les bunches de particules s'échappent, préparez-vous à une irradiation de masse! 
+warpdrive.accelerator.guide.lowPower_noParticles=Il nous faut plus d'énergie pour démarrer l'accélérateur!
+warpdrive.accelerator.guide.noChiller=Cet accélérateur n'a aucun refroidisseur!
+
+warpdrive.beam_frequency.tooltip=Fréquence de faisceau ajustée à %1$d
+warpdrive.beam_frequency.get=Beam frequency %2$d has been retrieved from %1$s 
+warpdrive.beam_frequency.set=%1$s est désormais accordé à la Fréquence de faisceau %2$d
+warpdrive.beam_frequency.statusLine.valid=La fréquence de faisceau %1$d est valide.
+warpdrive.beam_frequency.statusLine.invalid=§cLa fréquence de faisceau %1$d est invalide.
+warpdrive.beam_frequency.statusLine.undefined=§7La fréquence de faisceau est non définie.\n§bUtilises un Diapason§f pour l'ajuster.
+
+warpdrive.breathing.alarm=Alarme de respiration
+warpdrive.breathing.invalid_setup=Pas de casque respiratoire\nou armure incomplète
+warpdrive.breathing.low_reserve=Réserve d'air faible!
+warpdrive.breathing.no_air=Réserve d'air épuisée!
+
+warpdrive.control_channel.tooltip=Canal de contrôle ajusté à %1$d
+warpdrive.control_channel.get=Le canal de contrôle %2$d a été récupéré de %1$s 
+warpdrive.control_channel.set=%1$s est désormais accordé au Canal de contrôle %2$d
+warpdrive.control_channel.statusLine.valid=Le canal de contrôle %1$d est valide.
+warpdrive.control_channel.statusLine.invalid=§cLe canal de contrôle %1$d est invalide.
+warpdrive.control_channel.statusLine.undefined=§7Le canal de contrôle est non défini.\n§bUtilises un Diapason§r pour l'ajuster.
 
 warpdrive.forcefield.guide.lowPower=Nous sommes à court d'énergie Capitaine, réduissez la consommation ou appelez l'ingénieur écossais pour booster notre production!
 
@@ -409,7 +586,7 @@ warpdrive.forcefield.upgrade.statusLine.cooling=refroidissement
 warpdrive.forcefield.upgrade.statusLine.fusion=fusion
 warpdrive.forcefield.upgrade.statusLine.heating=chauffage
 warpdrive.forcefield.upgrade.statusLine.inversion=inversion
-warpdrive.forcefield.upgrade.statusLine.itemPort=port d'item
+warpdrive.forcefield.upgrade.statusLine.item_port=port d'item
 warpdrive.forcefield.upgrade.statusLine.pumping=pompe
 warpdrive.forcefield.upgrade.statusLine.range=portée
 warpdrive.forcefield.upgrade.statusLine.repulsion=répulsion
@@ -420,6 +597,15 @@ warpdrive.forcefield.upgrade.statusLine.speed=vitesse
 warpdrive.forcefield.upgrade.statusLine.stabilization=stabilisation
 warpdrive.forcefield.upgrade.statusLine.thickness=épaisseur
 warpdrive.forcefield.upgrade.statusLine.translation=translation
+
+warpdrive.particle.ion.name=ion
+warpdrive.particle.ion.tooltip=Produit par collision d'un bunch de particules dans un accélérateur élémentaire
+warpdrive.particle.proton.name=proton
+warpdrive.particle.proton.tooltip=Produit par collision d'un bunch de particules dans un accélérateur avancé
+warpdrive.particle.antimatter.name=antimatière
+warpdrive.particle.antimatter.tooltip=Produit par collision d'un bunch de particules dans un accélérateur supérieur
+warpdrive.particle.strange_matter.name=matière étrange
+warpdrive.particle.strange_matter.tooltip=Produit par collision frontale de 2 bunches de particules dans un accélérateur supérieur
 
 warpdrive.upgrade.result.noUpgradeToDismount=§cAucune amélioration à démonter.
 warpdrive.upgrade.result.notEnoughUpgrades=§cIl faut au moins 1 object pour améliorer ce bloc.
@@ -438,14 +624,18 @@ warpdrive.upgrade.result.notEnoughShapes.single=§cIl faut au moins 1 object pou
 warpdrive.upgrade.result.shapeDismounted=Forme démontée correctement.
 warpdrive.upgrade.result.shapeMounted=Forme montée correctement.
 
-warpdrive.forcefield.upgrade.statusLine.none=§7Pas d'augmentation installée.
-warpdrive.forcefield.upgrade.statusLine.valid=Augmenté avec %1$s.
+warpdrive.upgrade.statusLine.none=§7Pas d'augmentation installée.
+warpdrive.upgrade.statusLine.valid=Augmenté avec %1$s.
 
-warpdrive.videoChannel.statusLine.valid=Le canal vidéo %1$d est valide.
-warpdrive.videoChannel.statusLine.validCamera=Le canal vidéo %1$d est valide pour la caméra à %2$d %3$d %4$d.
-warpdrive.videoChannel.statusLine.invalid=§cLe canal vidéo %1$d est invalide.
-warpdrive.videoChannel.statusLine.invalidOrNotLoaded=§cLe canal vidéo %1$d est invalide ou la caméra est trop loin!
-warpdrive.videoChannel.statusLine.undefined=§7Le canal vidéo est non défini.\n§bUtilises un Diapason§r pour ajuster la fréquence de faisceau.
+warpdrive.video_channel.tooltip=Canal vidéo ajusté à %1$d
+warpdrive.video_channel.get=Le canal vidéo %2$d a été recupéré depuis %1$s
+warpdrive.video_channel.set=%1$s est désormais accordé au Canal vidéo %2$d
+warpdrive.video_channel.statusLine.valid=Le canal vidéo %1$d est valide.
+warpdrive.video_channel.statusLine.validCamera=Le canal vidéo %1$d est valide pour la caméra à %2$d %3$d %4$d.
+warpdrive.video_channel.statusLine.invalid=§cLe canal vidéo %1$d est invalide.
+warpdrive.video_channel.statusLine.invalidOrNotLoaded=§cLe canal vidéo %1$d est invalide ou la caméra est trop loin!
+warpdrive.video_channel.statusLine.undefined=§7Le canal vidéo est non défini.\n§bUtilises un Diapason§r pour l'ajuster.
+
 warpdrive.cloakingCore.invalidAssembly=§cL'assemblage est invalide!
 warpdrive.cloakingCore.disabled=Le champ d'invisibilité est désactivé
 warpdrive.cloakingCore.lowPower=§cLe champ d'invisibilité est en panne. Il nous faut plus d'énergie, Capitaine!
@@ -454,6 +644,6 @@ warpdrive.IC2reactorLaserMonitor.noReactor=Pas de réacteur IC2 trouvé!
 warpdrive.IC2reactorLaserMonitor.multipleReactors=%1$d réacteur(s) connecté(s).
 warpdrive.transporter.status=De %1$.0f %2$.0f %3$.0f à %4$.0f %5$.0f %6$.0f
 
-warpdrive.tooltip.itemTag.breathingIC2=Permet de §brespirer dans le vide§r en consommant des cellules d'air comprimé de IC2 depuis l'inventaire.
+warpdrive.tooltip.itemTag.breathingHelmet=Permet de §brespirer dans le vide§r en consommant des cartouches d'air et des cellules d'air comprimé de IC2 depuis l'inventaire.
 warpdrive.tooltip.itemTag.flyInSpace=Jetpack compatible avec une utilisation §bspatiale§r.
 warpdrive.tooltip.itemTag.noFallDamage=§bAbsorbe les damages de chute§r.

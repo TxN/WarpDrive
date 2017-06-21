@@ -1,5 +1,8 @@
 package cr0s.warpdrive.block.detection;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -13,10 +16,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockCloakingCore extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	public BlockCloakingCore() {
@@ -24,16 +30,18 @@ public class BlockCloakingCore extends BlockAbstractContainer {
 		setBlockName("warpdrive.detection.CloakingCore");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[2];
-		iconBuffer[0] = par1IconRegister.registerIcon("warpdrive:detection/cloakingCoreInactive");
-		iconBuffer[1] = par1IconRegister.registerIcon("warpdrive:detection/cloakingCoreActive");
+		iconBuffer[0] = iconRegister.registerIcon("warpdrive:detection/cloakingCoreInactive");
+		iconBuffer[1] = iconRegister.registerIcon("warpdrive:detection/cloakingCoreActive");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		int metadata  = world.getBlockMetadata(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		final int metadata  = blockAccess.getBlockMetadata(x, y, z);
 		if (metadata < iconBuffer.length) {
 			return iconBuffer[metadata];
 		}
@@ -41,6 +49,7 @@ public class BlockCloakingCore extends BlockAbstractContainer {
 		return null;
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		return iconBuffer[1];
@@ -51,9 +60,6 @@ public class BlockCloakingCore extends BlockAbstractContainer {
 		return new TileEntityCloakingCore();
 	}
 	
-	/**
-	 * Returns the quantity of items to drop on block destruction.
-	 */
 	@Override
 	public int quantityDropped(Random par1Random) {
 		return 1;
@@ -62,14 +68,6 @@ public class BlockCloakingCore extends BlockAbstractContainer {
 	@Override
 	public byte getTier(final ItemStack itemStack) {
 		return 3;
-	}
-	
-	/**
-	 * Returns the item to drop on destruction.
-	 */
-	@Override
-	public Item getItemDropped(int par1, Random par2Random, int par3) {
-		return Item.getItemFromBlock(this);
 	}
 	
 	@Override
@@ -82,12 +80,12 @@ public class BlockCloakingCore extends BlockAbstractContainer {
 		if (tileEntity instanceof TileEntityCloakingCore) {
 			TileEntityCloakingCore cloakingCore = (TileEntityCloakingCore)tileEntity;
 			if (entityPlayer.getHeldItem() == null) {
-				WarpDrive.addChatMessage(entityPlayer, cloakingCore.getStatus());
+				Commons.addChatMessage(entityPlayer, cloakingCore.getStatus());
 				// + " isInvalid? " + te.isInvalid() + " Valid? " + te.isValid + " Cloaking? " + te.isCloaking + " Enabled? " + te.isEnabled
 				return true;
 			} else if (entityPlayer.getHeldItem().getItem() == Item.getItemFromBlock(Blocks.redstone_torch)) {
 				cloakingCore.isEnabled = !cloakingCore.isEnabled;
-				WarpDrive.addChatMessage(entityPlayer, cloakingCore.getStatus());
+				Commons.addChatMessage(entityPlayer, cloakingCore.getStatus());
 				return true;
 			// } else if (xxx) {// TODO if player has advanced tool
 				// WarpDrive.addChatMessage(entityPlayer, cloakingCore.getStatus() + "\n" + cloakingCore.getEnergyStatus());

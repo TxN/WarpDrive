@@ -1,5 +1,16 @@
 package cr0s.warpdrive.event;
 
+import cr0s.warpdrive.BreathingManager;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.config.WarpDriveConfig;
+import cr0s.warpdrive.data.CelestialObject;
+import cr0s.warpdrive.data.StarMapRegistry;
+
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.ChunkCoordIntPair;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
@@ -7,10 +18,8 @@ import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import cr0s.warpdrive.WarpDrive;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -41,10 +50,28 @@ public class WorldHandler {
 	// Server side
 	@SubscribeEvent
 	public void onEntityJoinWorld(EntityJoinWorldEvent event){
+		if (event.world.isRemote) {
+			return;
+		}			
+		// WarpDrive.logger.info("onEntityJoinWorld " + event.entity);
 		if (event.entity instanceof EntityPlayer) {
-			// WarpDrive.logger.info("onEntityJoinWorld " + event.entity);
-			if (!event.world.isRemote) {
-				WarpDrive.cloaks.onPlayerEnteringDimension((EntityPlayer)event.entity);
+			WarpDrive.cloaks.onPlayerEnteringDimension((EntityPlayer)event.entity);
+			
+		} else if (event.entity instanceof EntityLivingBase) {
+			final EntityLivingBase entityLivingBase = (EntityLivingBase) event.entity;
+			final int x = MathHelper.floor_double(event.entity.posX);
+			final int y = MathHelper.floor_double(event.entity.posY);
+			final int z = MathHelper.floor_double(event.entity.posZ);
+			final CelestialObject celestialObject = StarMapRegistry.getCelestialObject(entityLivingBase.worldObj, x, z);
+			if (celestialObject == null) {
+				// unregistered dimension => exit
+				return;
+			}
+			if (!celestialObject.hasAtmosphere()) {
+				final boolean canJoin = BreathingManager.onLivingJoinEvent(entityLivingBase, x, y, z);
+				if (!canJoin) {
+					event.setCanceled(true);
+				}
 			}
 		}
 	}
@@ -77,5 +104,16 @@ public class WorldHandler {
 		}
 		
 		AbstractSequencer.updateTick();
+	}
+	
+	@SubscribeEvent
+	public void onBlockUpdated(BlockEvent blockEvent) {
+		if (WarpDriveConfig.LOGGING_BREAK_PLACE && WarpDrive.isDev) {
+			WarpDrive.logger.info("onBlockUpdate args " + blockEvent.block + "@" + blockEvent.blockMetadata
+			                      + " actual " + blockEvent.world.getBlock(blockEvent.x, blockEvent.y, blockEvent.z)
+			                      + "@" + blockEvent.world.getBlockMetadata(blockEvent.x, blockEvent.y, blockEvent.z));
+		}
+		WarpDrive.starMap.onBlockUpdated(blockEvent.world, blockEvent.x, blockEvent.y, blockEvent.z, blockEvent.block, blockEvent.blockMetadata);
+		ChunkHandler.onBlockUpdated(blockEvent.world, blockEvent.x, blockEvent.y, blockEvent.z);
 	}
 }

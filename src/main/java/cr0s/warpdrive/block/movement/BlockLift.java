@@ -1,5 +1,8 @@
 package cr0s.warpdrive.block.movement;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
@@ -10,10 +13,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockLift extends BlockAbstractContainer {
+
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	public BlockLift() {
@@ -21,20 +27,22 @@ public class BlockLift extends BlockAbstractContainer {
 		setBlockName("warpdrive.movement.Lift");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[6];
-		iconBuffer[0] = par1IconRegister.registerIcon("warpdrive:movement/liftSideOffline");
-		iconBuffer[1] = par1IconRegister.registerIcon("warpdrive:movement/liftSideUp");
-		iconBuffer[2] = par1IconRegister.registerIcon("warpdrive:movement/liftSideDown");
-		iconBuffer[3] = par1IconRegister.registerIcon("warpdrive:movement/liftUpInactive");
-		iconBuffer[4] = par1IconRegister.registerIcon("warpdrive:movement/liftUpOut");
-		iconBuffer[5] = par1IconRegister.registerIcon("warpdrive:movement/liftUpIn");
+		iconBuffer[0] = iconRegister.registerIcon("warpdrive:movement/liftSideOffline");
+		iconBuffer[1] = iconRegister.registerIcon("warpdrive:movement/liftSideUp");
+		iconBuffer[2] = iconRegister.registerIcon("warpdrive:movement/liftSideDown");
+		iconBuffer[3] = iconRegister.registerIcon("warpdrive:movement/liftUpInactive");
+		iconBuffer[4] = iconRegister.registerIcon("warpdrive:movement/liftUpOut");
+		iconBuffer[5] = iconRegister.registerIcon("warpdrive:movement/liftUpIn");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		int metadata  = world.getBlockMetadata(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		final int metadata  = blockAccess.getBlockMetadata(x, y, z);
 		if (metadata > 2) {
 			return iconBuffer[0];
 		}
@@ -51,6 +59,7 @@ public class BlockLift extends BlockAbstractContainer {
 		return iconBuffer[metadata];
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		if (metadata > 2) {
@@ -91,9 +100,9 @@ public class BlockLift extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityLift) {
-				WarpDrive.addChatMessage(entityPlayer, ((TileEntityLift)tileEntity).getStatus());
+				Commons.addChatMessage(entityPlayer, ((TileEntityLift) tileEntity).getStatus());
 				return true;
 			}
 		}

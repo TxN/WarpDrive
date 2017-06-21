@@ -1,5 +1,8 @@
 package cr0s.warpdrive.block.detection;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
@@ -9,10 +12,13 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockCamera extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	private static final int ICON_SIDE = 0;
@@ -22,13 +28,15 @@ public class BlockCamera extends BlockAbstractContainer {
 		setBlockName("warpdrive.detection.Camera");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[1];
 		// Solid textures
-		iconBuffer[ICON_SIDE] = par1IconRegister.registerIcon("warpdrive:detection/cameraSide");
+		iconBuffer[ICON_SIDE] = iconRegister.registerIcon("warpdrive:detection/cameraSide");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		return iconBuffer[ICON_SIDE];
@@ -37,6 +45,11 @@ public class BlockCamera extends BlockAbstractContainer {
 	@Override
 	public TileEntity createNewTileEntity(World parWorld, int i) {
 		return new TileEntityCamera();
+	}
+	
+	@Override
+	public boolean isOpaqueCube() {
+		return false;
 	}
 	
 	@Override
@@ -56,9 +69,9 @@ public class BlockCamera extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityCamera) {
-				WarpDrive.addChatMessage(entityPlayer, ((TileEntityCamera)tileEntity).getStatus());
+				Commons.addChatMessage(entityPlayer, ((TileEntityCamera) tileEntity).getStatus());
 				return true;
 			}
 		}

@@ -1,10 +1,11 @@
 package cr0s.warpdrive.data;
 
-import cr0s.warpdrive.config.WarpDriveConfig;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.ChunkProviderServer;
+
 import net.minecraftforge.common.DimensionManager;
 
 public class GlobalPosition {
@@ -51,25 +52,22 @@ public class GlobalPosition {
 		return getWorldServerIfLoaded() != null;
 	}
 	
-	public VectorI getSpaceCoordinates() {
-		if (dimensionId == WarpDriveConfig.G_SPACE_DIMENSION_ID) {
-			return new VectorI(x, y + 256, z);
-		}
-		if (dimensionId == WarpDriveConfig.G_HYPERSPACE_DIMENSION_ID) {
-			return new VectorI(x, y + 512, z);
-		}
-		for (Planet planet : WarpDriveConfig.PLANETS) {
-			if (planet.dimensionId == dimensionId) {
-				if ( (Math.abs(x - planet.dimensionCenterX) <= planet.borderSizeX)
-					&& (Math.abs(z - planet.dimensionCenterZ) <= planet.borderSizeZ)) {
-					return new VectorI(
-						x - planet.dimensionCenterX + planet.spaceCenterX,
-						y,
-						z - planet.dimensionCenterZ + planet.spaceCenterZ);
-				}
-			}
-		}
-		return null;
+	public Vector3 getUniversalCoordinates() {
+		return StarMapRegistry.getUniversalCoordinates(dimensionId, x, y, z);
+	}
+	
+	public GlobalPosition(final NBTTagCompound tagCompound) {
+		dimensionId = tagCompound.getInteger("dimensionId");
+		x = tagCompound.getInteger("x");
+		y = tagCompound.getInteger("y");
+		z = tagCompound.getInteger("z");
+	}
+	
+	public void writeToNBT(final NBTTagCompound tagCompound) {
+		tagCompound.setInteger("dimensionId", dimensionId);
+		tagCompound.setInteger("x", x);
+		tagCompound.setInteger("y", y);
+		tagCompound.setInteger("z", z);
 	}
 	
 	public boolean equals(final TileEntity tileEntity) {

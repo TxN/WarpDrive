@@ -1,35 +1,41 @@
 package cr0s.warpdrive.item;
 
-import cpw.mods.fml.common.Optional;
+import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.config.WarpDriveConfig;
 import ic2.api.reactor.IReactor;
 import ic2.api.reactor.IReactorComponent;
+
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import cr0s.warpdrive.WarpDrive;
+
+import cpw.mods.fml.common.Optional;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @Optional.InterfaceList({
 	@Optional.Interface(iface = "ic2.api.reactor.IReactorComponent", modid = "IC2")
 	})
 public class ItemIC2reactorLaserFocus extends Item implements IReactorComponent {
-	private final static int maxHeat = 3000;
+	
+	private static final int MAX_HEAT = 3000;
 	
 	public ItemIC2reactorLaserFocus() {
 		super();
-		setMaxDamage(maxHeat);
+		setMaxDamage(MAX_HEAT);
 		setCreativeTab(WarpDrive.creativeTabWarpDrive);
 		setUnlocalizedName("warpdrive.energy.IC2reactorLaserFocus");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerIcons(IIconRegister par1IconRegister) {
-		itemIcon = par1IconRegister.registerIcon("warpdrive:reactorFocus");
+	public void registerIcons(IIconRegister iconRegister) {
+		itemIcon = iconRegister.registerIcon("warpdrive:reactorFocus");
 	}
 	
 	private static void damageComponent(ItemStack self, int damage) {
 		int currDamage = self.getItemDamage();
-		int nextDamage = Math.min(maxHeat, Math.max(0, currDamage + damage));
+		int nextDamage = Math.min(MAX_HEAT, Math.max(0, currDamage + damage));
 		self.setItemDamage(nextDamage);
 	}
 	
@@ -45,7 +51,7 @@ public class ItemIC2reactorLaserFocus extends Item implements IReactorComponent 
 	
 	@Optional.Method(modid = "IC2")
 	private static void coolComponent(ItemStack self, IReactorComponent comp, IReactor reactor, ItemStack stack, int x, int y) {
-		int maxTransfer = maxHeat - self.getItemDamage();
+		int maxTransfer = MAX_HEAT - self.getItemDamage();
 		int compHeat = comp.getCurrentHeat(reactor, stack, x, y);
 		int transferHeat = -Math.min(compHeat, maxTransfer);
 		int retained = comp.alterHeat(reactor, stack, x, y, transferHeat);
@@ -56,7 +62,7 @@ public class ItemIC2reactorLaserFocus extends Item implements IReactorComponent 
 	private static void coolReactor(IReactor reactor, ItemStack stack) {
 		int reactorHeat = reactor.getHeat();
 		int myHeat = stack.getItemDamage();
-		int transfer = Math.min(maxHeat - myHeat, reactorHeat);
+		int transfer = Math.min(MAX_HEAT - myHeat, reactorHeat);
 		reactor.addHeat(-transfer);
 		damageComponent(stack, transfer);
 	}
@@ -100,7 +106,7 @@ public class ItemIC2reactorLaserFocus extends Item implements IReactorComponent 
 	@Override
 	@Optional.Method(modid = "IC2")
 	public int getMaxHeat(IReactor reactor, ItemStack yourStack, int x, int y) {
-		return maxHeat;
+		return MAX_HEAT;
 	}
 	
 	@Override
@@ -115,7 +121,7 @@ public class ItemIC2reactorLaserFocus extends Item implements IReactorComponent 
 		if (WarpDriveConfig.LOGGING_ENERGY) {
 			WarpDrive.logger.info(this + " alterHeat " + heat);
 		}
-		int transferred = Math.min(heat, maxHeat - yourStack.getItemDamage());
+		int transferred = Math.min(heat, MAX_HEAT - yourStack.getItemDamage());
 		damageComponent(yourStack, transferred);
 		return heat - transferred;
 	}

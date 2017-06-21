@@ -3,6 +3,8 @@ death.attack.warpdrive.asphyxia=%1$s умер от удушья
 death.attack.warpdrive.asphyxia.player=%2$s убил %1$s с помощью удушья
 death.attack.warpdrive.cold=%1$s died from cold
 death.attack.warpdrive.cold.player=%1$s was frozen to death by %2$s 
+death.attack.warpdrive.irradiation=%1$s died from irradiation
+death.attack.warpdrive.irradiation.player=%1$s received a lethal radiation from %2$s 
 death.attack.warpdrive.laser=%1$s died from crossing the beam
 death.attack.warpdrive.laser.player=%1$s was laserified by %2$s
 death.attack.warpdrive.shock=%1$s was electrocuted
@@ -11,6 +13,8 @@ death.attack.warpdrive.teleportation=%1$s не пережил рематериа
 death.attack.warpdrive.teleportation.player=%2$s убил %1$s телепортацией
 death.attack.warpdrive.warm=%1$s died from excessive temperature
 death.attack.warpdrive.warm.player=%1$s was cooked by %2$s
+
+itemGroup.warpdrive=WarpDrive
 
 item.warpdrive.crafting.Malformed.name=Поврежденный предмет
 item.warpdrive.crafting.EmeraldCrystal.name=Изумрудный настраиваемый кристалл
@@ -37,7 +41,14 @@ item.warpdrive.crafting.ElectromagneticProjector.name=Electromagnetic Projector
 item.warpdrive.crafting.Superconductor.name=Superconductor
 
 item.warpdrive.armor.AirCanisterFull.name=Баллон с воздухом
-item.warpdrive.armor.Helmet.name=Космический шлем
+item.warpdrive.armor.helmet.name=Космический шлем
+item.warpdrive.armor.chestplate.name=Warp Chestplate
+item.warpdrive.armor.leggings.name=Warp Leggings
+item.warpdrive.armor.boots.name=Warp Boots
+
+item.warpdrive.atomic.electromagnetic_cell.name=Electromagnetic cell
+item.warpdrive.atomic.electromagnetic_cell.tooltip.empty=Use a particle collider to fill me!
+item.warpdrive.atomic.electromagnetic_cell.tooltip.filled=Contains %1$s Å³ of %2$s
 
 item.warpdrive.energy.IC2reactorLaserFocus.name=Фокусировщик лазера реактора IC2
 
@@ -75,12 +86,12 @@ item.warpdrive.forcefield.upgrade.heating.name=Heating upgrade
 item.warpdrive.forcefield.upgrade.heating.tooltip=Heat up blocks and entities. Add more Heating upgrades to boost effect. Add an Inversion for an area/terraforming effect.
 item.warpdrive.forcefield.upgrade.inversion.name=Inversion upgrade
 item.warpdrive.forcefield.upgrade.inversion.tooltip=§4Work in progress\nChange from surface to volume effect area. Use this for entity targeting or terraforming.
-item.warpdrive.forcefield.upgrade.itemPort.name=Item port upgrade
-item.warpdrive.forcefield.upgrade.itemPort.tooltip=Interface with attached containers. Add an Attraction upgrade to collect Block breaker drops. Add a Repulsion upgrade to provide blocks to place using a Stabilization upgrade.
+item.warpdrive.forcefield.upgrade.item_port.name=Item port upgrade
+item.warpdrive.forcefield.upgrade.item_port.tooltip=Interface with attached containers. Add an Attraction upgrade to collect Block breaker drops. Add a Repulsion upgrade to provide blocks to place using a Stabilization upgrade.
 item.warpdrive.forcefield.upgrade.pumping.name=Pumping upgrade
 item.warpdrive.forcefield.upgrade.pumping.tooltip=§4Work in progress\nPump fluids at the force field location. Add more Pump upgrades to pull fluid with higher viscosity fluids like lava.
 item.warpdrive.forcefield.upgrade.range.name=Range upgrade
-item.warpdrive.forcefield.upgrade.range.tooltip=Increase the projector maximum range
+item.warpdrive.forcefield.upgrade.range.tooltip=Increase the projector maximum size
 item.warpdrive.forcefield.upgrade.repulsion.name=Repulsion upgrade
 item.warpdrive.forcefield.upgrade.repulsion.tooltip=Push stored items to be placed by stabilisation upgrade. Add more Repulsion upgrades to affect passive entities, monsters and eventually players. Add an Inversion for an area/terraforming effect.
 item.warpdrive.forcefield.upgrade.rotation.name=Rotation upgrade
@@ -108,7 +119,7 @@ item.warpdrive.upgrade.Energy.name=Улучшение - Хранилище эн�
 
 
 item.warpdrive.tool.crystalToken.name=Crystal token
-item.warpdrive.tool.crystalToken.tooltip=Crystal encapsulation of ship '%1$s'\n§bEnter the scanner field§7 to build your ship
+item.warpdrive.tool.crystalToken.tooltip=Crystal encapsulation of ship '%1$s'\n§bEnter the red builder's field§7 to claim a ship
 item.warpdrive.tool.crystalToken0.name=Crystal token #0
 item.warpdrive.tool.crystalToken1.name=Crystal token #1
 item.warpdrive.tool.crystalToken2.name=Crystal token #2
@@ -117,44 +128,84 @@ item.warpdrive.tool.crystalToken4.name=Crystal token #4
 item.warpdrive.tool.crystalToken5.name=Crystal token #5
 
 
-item.warpdrive.tool.TuningFork.name=Камертон
-item.warpdrive.tool.TuningFork.white.name=Белый камертон
-item.warpdrive.tool.TuningFork.orange.name=Оранжевый камертон
-item.warpdrive.tool.TuningFork.magenta.name=Пурпурный камертон
-item.warpdrive.tool.TuningFork.lightBlue.name=Голубой камертон
-item.warpdrive.tool.TuningFork.yellow.name=Желтый камертон
-item.warpdrive.tool.TuningFork.lime.name=Лаймовый камертон
-item.warpdrive.tool.TuningFork.pink.name=Розовый камертон
-item.warpdrive.tool.TuningFork.gray.name=Серый камертон
-item.warpdrive.tool.TuningFork.silver.name=Светло-серый камертон
-item.warpdrive.tool.TuningFork.cyan.name=Бирюзовый камертон
-item.warpdrive.tool.TuningFork.purple.name=Фиолетоый камертон
-item.warpdrive.tool.TuningFork.blue.name=Синий камертон
-item.warpdrive.tool.TuningFork.brown.name=Коричневый камертон
-item.warpdrive.tool.TuningFork.green.name=Зеленый камертон
-item.warpdrive.tool.TuningFork.red.name=Красный камертон
-item.warpdrive.tool.TuningFork.black.name=Черный камертон
+item.warpdrive.tool.tuning_driver.video_channel.name=Video Channel Tuning Driver
+item.warpdrive.tool.tuning_driver.beam_frequency.name=Beam Frequency Tuning Driver
+item.warpdrive.tool.tuning_driver.control_channel.name=Control Channel Tuning Driver
 
-item.warpdrive.tool.TuningFork.tooltip.videoChannel=Видеоканал установлен на %1$d
-item.warpdrive.tool.TuningFork.tooltip.beamFrequency=Частота луча установлена на %1$d
-item.warpdrive.tool.TuningFork.tooltip.usage=§bИспользуйте на блоке§7, чтобы настроить его кристаллы\n§bПрисядьте§7, чтобы настроить вторичные кристаллы
-item.warpdrive.tool.TuningFork.use.setVideoChannel=%1$s настроен на видеоканал %2$d
-item.warpdrive.tool.TuningFork.use.setBeamFrequency=%1$s настроен на частоту луча %2$d
+item.warpdrive.tool.tuning_driver.tooltip.usage=§bRight click a block§7 to tune its crystals\n§bSneak§7 to retrieve its value\n§bRight click air§7 to change mode
 
 
-tile.warpdrive.passive.Air.name=Воздух
-tile.warpdrive.passive.Energized.name=Энергизированный блок
-tile.warpdrive.passive.Gas.name=Газ
+item.warpdrive.tool.tuning_fork.name=Камертон
+item.warpdrive.tool.tuning_fork.white.name=Белый камертон
+item.warpdrive.tool.tuning_fork.orange.name=Оранжевый камертон
+item.warpdrive.tool.tuning_fork.magenta.name=Пурпурный камертон
+item.warpdrive.tool.tuning_fork.lightBlue.name=Голубой камертон
+item.warpdrive.tool.tuning_fork.yellow.name=Желтый камертон
+item.warpdrive.tool.tuning_fork.lime.name=Лаймовый камертон
+item.warpdrive.tool.tuning_fork.pink.name=Розовый камертон
+item.warpdrive.tool.tuning_fork.gray.name=Серый камертон
+item.warpdrive.tool.tuning_fork.silver.name=Светло-серый камертон
+item.warpdrive.tool.tuning_fork.cyan.name=Бирюзовый камертон
+item.warpdrive.tool.tuning_fork.purple.name=Фиолетоый камертон
+item.warpdrive.tool.tuning_fork.blue.name=Синий камертон
+item.warpdrive.tool.tuning_fork.brown.name=Коричневый камертон
+item.warpdrive.tool.tuning_fork.green.name=Зеленый камертон
+item.warpdrive.tool.tuning_fork.red.name=Красный камертон
+item.warpdrive.tool.tuning_fork.black.name=Черный камертон
+
+item.warpdrive.tool.tuning_fork.tooltip.usage=§bИспользуйте на блоке§7, чтобы настроить его кристаллы\n§bПрисядьте§7, чтобы настроить вторичные кристаллы
+
+
+tile.warpdrive.decoration.decorative.energized.name=Энергизированный блок
+tile.warpdrive.decoration.decorative.network.name=Сетевой блок
+tile.warpdrive.decoration.decorative.plain.name=Простой блок
+tile.warpdrive.decoration.gas.name=Газ
+
 tile.warpdrive.passive.IridiumBlock.name=Блок иридия
 tile.warpdrive.passive.HighlyAdvancedMachine.name=Высокотехнологичный корпус механизма
-tile.warpdrive.passive.Network.name=Сетевой блок
-tile.warpdrive.passive.Plain.name=Простой блок
 tile.warpdrive.passive.TransportBeacon.name=Маяк для транспортера
 
-tile.warpdrive.machines.AirGenerator.name=Генератор воздуха
 tile.warpdrive.machines.ChunkLoader.name=Загрузчик чанков
 tile.warpdrive.machines.Laser.name=Лазер
 tile.warpdrive.machines.LaserMedium.name=Лазерный излучатель (Ускоритель частиц)
+
+tile.warpdrive.atomic.accelerator_controller.name=Accelerator Controller
+tile.warpdrive.atomic.accelerator_controller.tooltip=Controls one or more particle accelerators.\nShall be placed next to an electromagnet.
+tile.warpdrive.atomic.accelerator_control_point.name=Accelerator control point
+tile.warpdrive.atomic.accelerator_control_point.tooltip=Control accelerator nodes like collider, input and output.\nShall be placed exactly 1 block away from a void shell.\nStore results in any directly connected storage.
+tile.warpdrive.atomic.chiller1.name=Basic Chiller
+tile.warpdrive.atomic.chiller1.tooltip=Progressively cooldown electromagnets from a connected particle accelerator.\nShall be placed next to an electromagnet.
+tile.warpdrive.atomic.chiller2.name=Advanced Chiller
+tile.warpdrive.atomic.chiller2.tooltip=Progressively cooldown electromagnets from a connected particle accelerator.\nShall be placed next to an electromagnet.
+tile.warpdrive.atomic.chiller3.name=Superior Chiller
+tile.warpdrive.atomic.chiller3.tooltip=Progressively cooldown electromagnets from a connected particle accelerator.\nShall be placed next to an electromagnet.
+tile.warpdrive.atomic.electromagnet1.plain.name=Basic Plain Electromagnet
+tile.warpdrive.atomic.electromagnet1.plain.tooltip=Accelerate, focus and orient particles in the attached Void Shell.
+tile.warpdrive.atomic.electromagnet1.glass.name=Basic Glass Electromagnet
+tile.warpdrive.atomic.electromagnet1.glass.tooltip=Same a Plain Electromagnet, except you can see through it.
+tile.warpdrive.atomic.electromagnet2.plain.name=Advanced Plain Electromagnet
+tile.warpdrive.atomic.electromagnet2.plain.tooltip=Accelerate, focus and orient particles in the attached Void Shell.
+tile.warpdrive.atomic.electromagnet2.glass.name=Advanced Glass Electromagnet
+tile.warpdrive.atomic.electromagnet2.glass.tooltip=Same a Plain Electromagnet, except you can see through it.
+tile.warpdrive.atomic.electromagnet3.plain.name=Superior Plain Electromagnet
+tile.warpdrive.atomic.electromagnet3.plain.tooltip=Accelerate, focus and orient particles in the attached Void Shell.
+tile.warpdrive.atomic.electromagnet3.glass.name=Superior Glass Electromagnet
+tile.warpdrive.atomic.electromagnet3.glass.tooltip=Same a Plain Electromagnet, except you can see through it.
+tile.warpdrive.atomic.particles_collider.name=Particles Collider
+tile.warpdrive.atomic.particles_collider.tooltip=Deviates particles to collide against each others or a fixed target.\nRequires 12 blocks and an Accelerator control point to collect results.
+tile.warpdrive.atomic.particles_injector.name=Particles Injector
+tile.warpdrive.atomic.particles_injector.tooltip=Inject items or particles from a connected storage into a Basic Accelerator.
+tile.warpdrive.atomic.void_shell_plain.name=Plain Void Shell
+tile.warpdrive.atomic.void_shell_plain.tooltip=Provides 2 empty channels for particles to travel inside an accelerator setup.\nConnects only horizontally to other Void Shells.
+tile.warpdrive.atomic.void_shell_glass.name=Glass Void Shell
+tile.warpdrive.atomic.void_shell_glass.tooltip=Same as a Plain Void Shell, except you can see particles moving through it.
+
+tile.warpdrive.breathing.air.name=Воздух
+tile.warpdrive.breathing.air_generator.name=Генератор воздуха
+tile.warpdrive.breathing.air_generator1.name=Basic Генератор воздуха
+tile.warpdrive.breathing.air_generator2.name=Advanced Генератор воздуха
+tile.warpdrive.breathing.air_generator3.name=Superior Генератор воздуха
+tile.warpdrive.breathing.air_shield.name=Energy Air Shield
 
 tile.warpdrive.building.ShipScanner.name=Сканер кораблей
 
@@ -209,7 +260,9 @@ tile.warpdrive.forcefield.relay3.tooltip=Supports up to 1 force field upgrade sh
 
 tile.warpdrive.movement.Lift.name=Лифт
 tile.warpdrive.movement.ShipController.name=Контроллер корабля
+tile.warpdrive.movement.ShipController.tooltip=Defines your ship front relative to the core. Attach a computer to open the user interface.\nShall be placed horizontally directly next to the Ship core.
 tile.warpdrive.movement.ShipCore.name=Ядро корабля
+tile.warpdrive.movement.ShipCore.tooltip=Defines your ship center relative to the controller. Connecting an energy source will charge the core.\nShall be placed horizontally directly next to the Ship controller.
 tile.warpdrive.movement.Transporter.name=Транспортер
 
 tile.warpdrive.weapon.LaserCamera.name=Камера с прикрепленным лазером
@@ -251,6 +304,40 @@ tile.warpdrive.hull1.glass.green.name=Зеленое базовое корабе
 tile.warpdrive.hull1.glass.red.name=Красное базовое корабельное стекло
 tile.warpdrive.hull1.glass.black.name=Черное базовое корабельное стекло
 
+tile.warpdrive.hull1.omnipanel.white.name=White Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.orange.name=Orange Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.magenta.name=Magenta Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.lightBlue.name=Light Blue Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.yellow.name=Yellow Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.lime.name=Lime Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.pink.name=Pink Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.gray.name=Gray Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.silver.name=Silver Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.cyan.name=Cyan Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.purple.name=Purple Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.blue.name=Blue Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.brown.name=Brown Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.green.name=Green Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.red.name=Red Stained Basic Hull Omnipanel
+tile.warpdrive.hull1.omnipanel.black.name=Black Stained Basic Hull Omnipanel
+
+tile.warpdrive.hull1.slab.white.name=White Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.orange.name=Orange Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.magenta.name=Magenta Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.lightBlue.name=Light Blue Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.yellow.name=Yellow Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.lime.name=Lime Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.pink.name=Pink Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.gray.name=Gray Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.silver.name=Silver Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.cyan.name=Cyan Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.purple.name=Purple Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.blue.name=Blue Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.brown.name=Brown Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.green.name=Green Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.red.name=Red Stained Basic Hull Slab
+tile.warpdrive.hull1.slab.black.name=Black Stained Basic Hull Slab
+
 tile.warpdrive.hull1.stairs.white.name=White Stained Basic Hull Stairs
 tile.warpdrive.hull1.stairs.orange.name=Orange Stained Basic Hull Stairs
 tile.warpdrive.hull1.stairs.magenta.name=Magenta Stained Basic Hull Stairs
@@ -267,6 +354,7 @@ tile.warpdrive.hull1.stairs.brown.name=Brown Stained Basic Hull Stairs
 tile.warpdrive.hull1.stairs.green.name=Green Stained Basic Hull Stairs
 tile.warpdrive.hull1.stairs.red.name=Red Stained Basic Hull Stairs
 tile.warpdrive.hull1.stairs.black.name=Black Stained Basic Hull Stairs
+
 
 tile.warpdrive.hull2.plain.white.name=Белый улучшенный корабельный корпус
 tile.warpdrive.hull2.plain.orange.name=Оранжевый улучшенный корабельный корпус
@@ -302,6 +390,40 @@ tile.warpdrive.hull2.glass.green.name=Зеленое улучшенное кор
 tile.warpdrive.hull2.glass.red.name=Красное улучшенное корабельное стекло
 tile.warpdrive.hull2.glass.black.name=Черное улучшенное корабельное стекло
 
+tile.warpdrive.hull2.omnipanel.white.name=White Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.orange.name=Orange Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.magenta.name=Magenta Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.lightBlue.name=Light Blue Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.yellow.name=Yellow Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.lime.name=Lime Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.pink.name=Pink Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.gray.name=Gray Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.silver.name=Silver Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.cyan.name=Cyan Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.purple.name=Purple Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.blue.name=Blue Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.brown.name=Brown Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.green.name=Green Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.red.name=Red Stained Advanced Hull Omnipanel
+tile.warpdrive.hull2.omnipanel.black.name=Black Stained Advanced Hull Omnipanel
+
+tile.warpdrive.hull2.slab.white.name=White Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.orange.name=Orange Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.magenta.name=Magenta Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.lightBlue.name=Light Blue Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.yellow.name=Yellow Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.lime.name=Lime Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.pink.name=Pink Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.gray.name=Gray Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.silver.name=Silver Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.cyan.name=Cyan Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.purple.name=Purple Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.blue.name=Blue Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.brown.name=Brown Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.green.name=Green Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.red.name=Red Stained Advanced Hull Slab
+tile.warpdrive.hull2.slab.black.name=Black Stained Advanced Hull Slab
+
 tile.warpdrive.hull2.stairs.white.name=White Stained Advanced Hull Stairs
 tile.warpdrive.hull2.stairs.orange.name=Orange Stained Advanced Hull Stairs
 tile.warpdrive.hull2.stairs.magenta.name=Magenta Stained Advanced Hull Stairs
@@ -318,6 +440,7 @@ tile.warpdrive.hull2.stairs.brown.name=Brown Stained Advanced Hull Stairs
 tile.warpdrive.hull2.stairs.green.name=Green Stained Advanced Hull Stairs
 tile.warpdrive.hull2.stairs.red.name=Red Stained Advanced Hull Stairs
 tile.warpdrive.hull2.stairs.black.name=Black Stained Advanced Hull Stairs
+
 
 tile.warpdrive.hull3.plain.white.name=Белый высококачественный корабельный корпус
 tile.warpdrive.hull3.plain.orange.name=Оранжевый высококачественный корабельный корпус
@@ -353,6 +476,40 @@ tile.warpdrive.hull3.glass.green.name=Зеленое высококачеств�
 tile.warpdrive.hull3.glass.red.name=Красное высококачественное корабельное стекло
 tile.warpdrive.hull3.glass.black.name=Черное высококачественное корабельное стекло
 
+tile.warpdrive.hull3.omnipanel.white.name=White Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.orange.name=Orange Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.magenta.name=Magenta Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.lightBlue.name=Light Blue Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.yellow.name=Yellow Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.lime.name=Lime Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.pink.name=Pink Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.gray.name=Gray Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.silver.name=Silver Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.cyan.name=Cyan Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.purple.name=Purple Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.blue.name=Blue Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.brown.name=Brown Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.green.name=Green Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.red.name=Red Stained Superior Hull Omnipanel
+tile.warpdrive.hull3.omnipanel.black.name=Black Stained Superior Hull Omnipanel
+
+tile.warpdrive.hull3.slab.white.name=White Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.orange.name=Orange Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.magenta.name=Magenta Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.lightBlue.name=Light Blue Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.yellow.name=Yellow Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.lime.name=Lime Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.pink.name=Pink Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.gray.name=Gray Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.silver.name=Silver Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.cyan.name=Cyan Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.purple.name=Purple Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.blue.name=Blue Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.brown.name=Brown Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.green.name=Green Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.red.name=Red Stained Superior Hull Slab
+tile.warpdrive.hull3.slab.black.name=Black Stained Superior Hull Slab
+
 tile.warpdrive.hull3.stairs.white.name=White Stained Superior Hull Stairs
 tile.warpdrive.hull3.stairs.orange.name=Orange Stained Superior Hull Stairs
 tile.warpdrive.hull3.stairs.magenta.name=Magenta Stained Superior Hull Stairs
@@ -385,9 +542,29 @@ warpdrive.energy.side.changedToInput=%1$s side changed to energy Input mode!
 warpdrive.energy.side.changedToOutput=%1$s side changed to energy Output mode!
 warpdrive.energy.side.changedToDisabled=%1$s side changed to Disabled mode!
 
-warpdrive.beamFrequency.statusLine.valid=Частота луча %1$d действительна.
-warpdrive.beamFrequency.statusLine.invalid=§cЧастота луча %1$d недействительна.
-warpdrive.beamFrequency.statusLine.undefined=§7Undefined beam frequency.\n§bUse a Tuning fork§r to set Beam frequency.
+warpdrive.accelerator.guide.lowPower_noStorage=Energy storage is too low; we need at least %1$d to continue operation but can only store %2$d
+warpdrive.accelerator.guide.lowPower_accelerating=We're running out of power chief, particles are on the loose, prepare for massive irradiation!
+warpdrive.accelerator.guide.lowPower_noParticles=We need more power to start the accelerator!
+warpdrive.accelerator.guide.noChiller=No chiller could be found for this accelerator!
+
+warpdrive.beam_frequency.tooltip=Частота луча установлена на %1$d
+warpdrive.beam_frequency.get=Beam frequency %2$d has been retrieved from %1$s 
+warpdrive.beam_frequency.set=%1$s настроен на частоту луча %2$d
+warpdrive.beam_frequency.statusLine.valid=Частота луча %1$d действительна.
+warpdrive.beam_frequency.statusLine.invalid=§cЧастота луча %1$d недействительна.
+warpdrive.beam_frequency.statusLine.undefined=§7Undefined beam frequency.\n§bUse a Tuning fork§r to set Beam frequency.
+
+warpdrive.breathing.alarm=Breathing alarm
+warpdrive.breathing.invalid_setup=No breathing helmet\nor incomplete armor
+warpdrive.breathing.low_reserve=Low air reserve!
+warpdrive.breathing.no_air=No more air!
+
+warpdrive.control_channel.tooltip=Control channel is set to %1$d
+warpdrive.control_channel.get=Control channel %2$d has been retrieved from %1$s 
+warpdrive.control_channel.set=%1$s is now tuned with Control channel %2$d
+warpdrive.control_channel.statusLine.valid=Control channel %1$d is valid.
+warpdrive.control_channel.statusLine.invalid=§cControl channel %1$d is invalid.
+warpdrive.control_channel.statusLine.undefined=§7Undefined Control channel.\n§bUse a Tuning fork§r to set it.
 
 warpdrive.forcefield.guide.lowPower=We're running out of power captain, reduce our consumption or get that scottish engineer to boost our power!
 
@@ -409,7 +586,7 @@ warpdrive.forcefield.upgrade.statusLine.cooling=cooling
 warpdrive.forcefield.upgrade.statusLine.fusion=fusion
 warpdrive.forcefield.upgrade.statusLine.heating=heating
 warpdrive.forcefield.upgrade.statusLine.inversion=inversion
-warpdrive.forcefield.upgrade.statusLine.itemPort=item port
+warpdrive.forcefield.upgrade.statusLine.item_port=item port
 warpdrive.forcefield.upgrade.statusLine.pumping=pumping
 warpdrive.forcefield.upgrade.statusLine.range=increased range
 warpdrive.forcefield.upgrade.statusLine.repulsion=repulsion
@@ -420,6 +597,15 @@ warpdrive.forcefield.upgrade.statusLine.speed=speed
 warpdrive.forcefield.upgrade.statusLine.stabilization=stabilization
 warpdrive.forcefield.upgrade.statusLine.thickness=thickness
 warpdrive.forcefield.upgrade.statusLine.translation=translation
+
+warpdrive.particle.ion.name=ion
+warpdrive.particle.ion.tooltip=Produced by colliding a particle bunch in a normal accelerator
+warpdrive.particle.proton.name=proton
+warpdrive.particle.proton.tooltip=Produced by colliding a particle bunch in an advanced accelerator
+warpdrive.particle.antimatter.name=antimatter
+warpdrive.particle.antimatter.tooltip=Produced by colliding a particle bunch in a superior accelerator
+warpdrive.particle.strange_matter.name=strange matter
+warpdrive.particle.strange_matter.tooltip=Produced by colliding 2 particle bunches in a superior accelerator
 
 warpdrive.upgrade.result.noUpgradeToDismount=§cNo upgrade to dismount.
 warpdrive.upgrade.result.notEnoughUpgrades=§cYou need at least 1 item to upgrade this block.
@@ -441,11 +627,15 @@ warpdrive.upgrade.result.shapeMounted=Shape mounted successfully.
 warpdrive.upgrade.statusLine.none=§7No upgrade installed.
 warpdrive.upgrade.statusLine.valid=Upgraded with %1$s.
 
-warpdrive.videoChannel.statusLine.valid=Видеоканал %1$d действителен.
-warpdrive.videoChannel.statusLine.validCamera=Видеоканал %1$d действителен для камеры на %2$d, %3$d, %4$d.
-warpdrive.videoChannel.statusLine.invalid=§cВидеоканал %1$d недействителен.
-warpdrive.videoChannel.statusLine.invalidOrNotLoaded=§cВидеоканал %1$d недействителен или камера слишком далеко.
-warpdrive.videoChannel.statusLine.undefined=§7Undefined Video channel.\n§bUse a Tuning fork§r to set it.
+warpdrive.video_channel.tooltip=Видеоканал установлен на %1$d
+warpdrive.video_channel.get=Video channel %2$d has been retrieved from %1$s
+warpdrive.video_channel.set=%1$s настроен на видеоканал %2$d
+warpdrive.video_channel.statusLine.valid=Видеоканал %1$d действителен.
+warpdrive.video_channel.statusLine.validCamera=Видеоканал %1$d действителен для камеры на %2$d, %3$d, %4$d.
+warpdrive.video_channel.statusLine.invalid=§cВидеоканал %1$d недействителен.
+warpdrive.video_channel.statusLine.invalidOrNotLoaded=§cВидеоканал %1$d недействителен или камера слишком далеко.
+warpdrive.video_channel.statusLine.undefined=§7Undefined Video channel.\n§bUse a Tuning fork§r to set it.
+
 warpdrive.cloakingCore.invalidAssembly=§cНеверная структура.
 warpdrive.cloakingCore.disabled=Маскировка выключена
 warpdrive.cloakingCore.lowPower=§cМаскировка выключилась, нужно больше энергии, капитан!
@@ -454,6 +644,6 @@ warpdrive.IC2reactorLaserMonitor.noReactor=Реактор не найден!
 warpdrive.IC2reactorLaserMonitor.multipleReactors=%1$d реактор(ов) подключено.
 warpdrive.transporter.status=Из %1$.0f %2$.0f %3$.0f в %4$.0f %5$.0f %6$.0f
 
-warpdrive.tooltip.itemTag.breathingIC2=§bSpace breathing§r consuming IC2 Compressed air cells from your inventory.
+warpdrive.tooltip.itemTag.breathingHelmet=§bSpace breathing§r consuming Air canisters and IC2 Compressed air cells from your inventory.
 warpdrive.tooltip.itemTag.flyInSpace=§bSpace compatible jetpack§r.
 warpdrive.tooltip.itemTag.noFallDamage=§bAbsorbs fall damage§r.

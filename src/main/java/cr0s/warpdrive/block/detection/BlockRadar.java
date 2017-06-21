@@ -1,5 +1,8 @@
 package cr0s.warpdrive.block.detection;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
@@ -11,10 +14,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockRadar extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	private static final int ICON_SIDE_INACTIVE = 0;
@@ -28,19 +34,21 @@ public class BlockRadar extends BlockAbstractContainer {
 		setBlockName("warpdrive.detection.Radar");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[16];
-		iconBuffer[ICON_SIDE_INACTIVE] = par1IconRegister.registerIcon("warpdrive:detection/radarSideInactive");
-		iconBuffer[ICON_BOTTOM] = par1IconRegister.registerIcon("warpdrive:detection/radarBottom");
-		iconBuffer[ICON_TOP] = par1IconRegister.registerIcon("warpdrive:detection/radarTop");
-		iconBuffer[ICON_SIDE_ACTIVATED] = par1IconRegister.registerIcon("warpdrive:detection/radarSideActive");
-		iconBuffer[ICON_SIDE_ACTIVATED_SCAN] = par1IconRegister.registerIcon("warpdrive:detection/radarSideActiveScan");
+		iconBuffer[ICON_SIDE_INACTIVE      ] = iconRegister.registerIcon("warpdrive:detection/radarSideInactive");
+		iconBuffer[ICON_BOTTOM             ] = iconRegister.registerIcon("warpdrive:detection/radarBottom");
+		iconBuffer[ICON_TOP                ] = iconRegister.registerIcon("warpdrive:detection/radarTop");
+		iconBuffer[ICON_SIDE_ACTIVATED     ] = iconRegister.registerIcon("warpdrive:detection/radarSideActive");
+		iconBuffer[ICON_SIDE_ACTIVATED_SCAN] = iconRegister.registerIcon("warpdrive:detection/radarSideActiveScan");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		int metadata  = world.getBlockMetadata(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		int metadata  = blockAccess.getBlockMetadata(x, y, z);
 		if (side == 0) {
 			return iconBuffer[ICON_BOTTOM];
 		} else if (side == 1) {
@@ -58,6 +66,7 @@ public class BlockRadar extends BlockAbstractContainer {
 		return iconBuffer[ICON_SIDE_INACTIVE];
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		if (side == 0) {
@@ -75,17 +84,11 @@ public class BlockRadar extends BlockAbstractContainer {
 		return new TileEntityRadar();
 	}
 	
-	/**
-	 * Returns the quantity of items to drop on block destruction.
-	 */
 	@Override
 	public int quantityDropped(Random par1Random) {
 		return 1;
 	}
 	
-	/**
-	 * Returns the ID of the items to drop on destruction.
-	 */
 	@Override
 	public Item getItemDropped(int par1, Random par2Random, int par3) {
 		return Item.getItemFromBlock(this);
@@ -103,9 +106,9 @@ public class BlockRadar extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityRadar) {
-				WarpDrive.addChatMessage(entityPlayer, ((TileEntityRadar)tileEntity).getStatus());
+				Commons.addChatMessage(entityPlayer, ((TileEntityRadar) tileEntity).getStatus());
 				return true;
 			}
 		}

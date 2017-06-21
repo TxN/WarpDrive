@@ -1,31 +1,29 @@
 package cr0s.warpdrive.block;
 
+import cr0s.warpdrive.CommonProxy;
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.api.IBlockUpdateDetector;
 import cr0s.warpdrive.config.WarpDriveConfig;
-import cr0s.warpdrive.data.VectorI;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 public abstract class TileEntityAbstractBase extends TileEntity implements IBlockUpdateDetector {
 	private boolean isFirstTick = true;
@@ -47,10 +45,6 @@ public abstract class TileEntityAbstractBase extends TileEntity implements IBloc
 	public void updatedNeighbours() {
 	}
 	
-	protected boolean isOnPlanet() {
-		return worldObj.provider.dimensionId == 0;
-	}
-	
 	protected void updateMetadata(int metadata) {
 		if (getBlockMetadata() != metadata) {
 			worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, metadata, 2);
@@ -60,54 +54,22 @@ public abstract class TileEntityAbstractBase extends TileEntity implements IBloc
 	@Override
 	public void markDirty() {
 		super.markDirty();
-		if (worldObj != null) {
+		if (hasWorldObj()) {
 			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+			WarpDrive.starMap.onBlockUpdated(worldObj, xCoord, yCoord, zCoord, getBlockType(), getBlockMetadata());
 		}
 	}
 	
 	// Inventory management methods
 	
-	public static ItemStack copyWithSize(ItemStack itemStack, int newSize) {
-		ItemStack ret = itemStack.copy();
-		ret.stackSize = newSize;
-		return ret;
-	}
-	
-	public static Collection<IInventory> getConnectedInventories(TileEntity tileEntityConnection) {
-		Collection<IInventory> result = new ArrayList<>(6);
-		
-		for(ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-			TileEntity tileEntity = tileEntityConnection.getWorldObj().getTileEntity(
-				tileEntityConnection.xCoord + side.offsetX, tileEntityConnection.yCoord + side.offsetY, tileEntityConnection.zCoord + side.offsetZ);
-			if (tileEntity != null && (tileEntity instanceof IInventory)) {
-				result.add((IInventory) tileEntity);
-				
-				if (tileEntity instanceof TileEntityChest) {
-					TileEntityChest tileEntityChest = (TileEntityChest) tileEntity;
-					tileEntityChest.checkForAdjacentChests();
-					if (tileEntityChest.adjacentChestXNeg != null) {
-						result.add(tileEntityChest.adjacentChestXNeg);
-					} else if (tileEntityChest.adjacentChestXPos != null) {
-						result.add(tileEntityChest.adjacentChestXPos);
-					} else if (tileEntityChest.adjacentChestZNeg != null) {
-						result.add(tileEntityChest.adjacentChestZNeg);
-					} else if (tileEntityChest.adjacentChestZPos != null) {
-						result.add(tileEntityChest.adjacentChestZPos);
-					}
-				}
-			}
-		}
-		return result;
-	}
-	
 	protected boolean addToConnectedInventories(final ItemStack itemStack) {
 		List<ItemStack> itemStacks = new ArrayList<>(1);
 		itemStacks.add(itemStack);
-		return addToInventories(itemStacks, getConnectedInventories(this));
+		return addToInventories(itemStacks, Commons.getConnectedInventories(this));
 	}
 	
 	protected boolean addToConnectedInventories(final List<ItemStack> itemStacks) {
-		return addToInventories(itemStacks, getConnectedInventories(this));
+		return addToInventories(itemStacks, Commons.getConnectedInventories(this));
 	}
 	
 	protected boolean addToInventories(final List<ItemStack> itemStacks, final Collection<IInventory> inventories) {
@@ -136,7 +98,7 @@ public abstract class TileEntityAbstractBase extends TileEntity implements IBloc
 					int transfer;
 					while (qtyLeft > 0) {
 						transfer = Math.min(qtyLeft, itemStackLeft.getMaxStackSize());
-						ItemStack itemStackDrop = copyWithSize(itemStackLeft, transfer);
+						ItemStack itemStackDrop = Commons.copyWithSize(itemStackLeft, transfer);
 						EntityItem entityItem = new EntityItem(worldObj, xCoord + 0.5D, yCoord + 1.0D, zCoord + 0.5D, itemStackDrop);
 						worldObj.spawnEntityInWorld(entityItem);
 						qtyLeft -= transfer;
@@ -187,7 +149,7 @@ public abstract class TileEntityAbstractBase extends TileEntity implements IBloc
 				}
 				
 				transfer = Math.min(qtyLeft, itemStackSource.getMaxStackSize());
-				ItemStack dest = copyWithSize(itemStackSource, transfer);
+				ItemStack dest = Commons.copyWithSize(itemStackSource, transfer);
 				inventory.setInventorySlotContents(i, dest);
 				qtyLeft -= transfer;
 				
@@ -201,99 +163,13 @@ public abstract class TileEntityAbstractBase extends TileEntity implements IBloc
 	}
 	
 	
-	// searching methods
-	
-	public static final ForgeDirection[] UP_DIRECTIONS = { ForgeDirection.UP, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST };
-	public static Set<VectorI> getConnectedBlocks(World world, VectorI start, ForgeDirection[] directions, HashSet<Block> whitelist, int maxRange, VectorI... ignore) {
-		return getConnectedBlocks(world, Arrays.asList(start), directions, whitelist, maxRange, ignore);
-	}
-	public static Set<VectorI> getConnectedBlocks(World world, Collection<VectorI> start, ForgeDirection[] directions, HashSet<Block> whitelist, int maxRange, VectorI... ignore) {
-		Set<VectorI> toIgnore = new HashSet<>();
-		if (ignore != null) {
-			toIgnore.addAll(Arrays.asList(ignore));
-		}
-		
-		Set<VectorI> toIterate = new HashSet<>();
-		toIterate.addAll(start);
-		
-		Set<VectorI> toIterateNext;
-		
-		Set<VectorI> iterated = new HashSet<>();
-		
-		int range = 0;
-		while(!toIterate.isEmpty() && range < maxRange) {
-			toIterateNext = new HashSet<>();
-			for (VectorI current : toIterate) {
-				if (whitelist.contains(current.getBlock_noChunkLoading(world))) {
-					iterated.add(current);
-				}
-				
-				for(ForgeDirection direction : directions) {
-					VectorI next = current.clone(direction);
-					if (!iterated.contains(next) && !toIgnore.contains(next) && !toIterate.contains(next) && !toIterateNext.contains(next)) {
-						if (whitelist.contains(next.getBlock_noChunkLoading(world))) {
-							toIterateNext.add(next);
-						}
-					}
-				}
-			}
-			toIterate = toIterateNext;
-			range++;
-		}
-		
-		return iterated;
-	}
-	
-	
-	// data manipulation methods
-	
-	protected static int toInt(double d) {
-		return (int) Math.round(d);
-	}
-	
-	protected static int toInt(Object object) {
-		return toInt(toDouble(object));
-	}
-	
-	protected static double toDouble(Object object) {
-		return Double.parseDouble(object.toString());
-	}
-	
-	protected static float toFloat(Object object) {
-		return Float.parseFloat(object.toString());
-	}
-	
-	protected static boolean toBool(Object object) {
-		if (object == null) {
-			 return false;
-		}
-		if (object instanceof Boolean) {
-			 return ((Boolean) object);
-		}
-		String string = object.toString();
-		return string.equals("true") || string.equals("1.0") || string.equals("1") || string.equals("y") || string.equals("yes");
-	}
-	
-	protected static int clamp(final int min, final int max, final int value) {
-		return Math.min(max, Math.max(value, min));
-	}
-	
-	protected static float clamp(final float min, final float max, final float value) {
-		return Math.min(max, Math.max(value, min));
-	}
-	
-	protected static double clamp(final double min, final double max, final double value) {
-		return Math.min(max, Math.max(value, min));
-	}
-	
-	
 	// area protection
-	protected boolean isBlockBreakCanceled(EntityPlayer entityPlayer, World world, int eventX, int eventY, int eventZ) {
-		return WarpDrive.proxy.isBlockBreakCanceled(entityPlayer, xCoord, yCoord, zCoord, world, eventX, eventY, eventZ);
+	protected boolean isBlockBreakCanceled(final UUID uuidPlayer, World world, final int eventX, final int eventY, final int eventZ) {
+		return CommonProxy.isBlockBreakCanceled(uuidPlayer, xCoord, yCoord, zCoord, world, eventX, eventY, eventZ);
 	}
 	
-	protected boolean isBlockPlaceCanceled(EntityPlayer entityPlayer, World world, int eventX, int eventY, int eventZ, Block block, int metadata) {
-		return WarpDrive.proxy.isBlockPlaceCanceled(entityPlayer, xCoord, yCoord, zCoord, world, eventX, eventY, eventZ, block, metadata);
+	protected boolean isBlockPlaceCanceled(final UUID uuidPlayer, World world, final int eventX, final int eventY, final int eventZ, final Block block, final int metadata) {
+		return CommonProxy.isBlockPlaceCanceled(uuidPlayer, xCoord, yCoord, zCoord, world, eventX, eventY, eventZ, block, metadata);
 	}
 	
 	// saved properties
@@ -348,13 +224,26 @@ public abstract class TileEntityAbstractBase extends TileEntity implements IBloc
 		}
 	}
 	
-	public String getStatus() {
+	protected String getStatusPrefix() {
 		if (worldObj == null) {
 			return "";
 		} else {
 			ItemStack itemStack = new ItemStack(Item.getItemFromBlock(getBlockType()), 1, getBlockMetadata());
 			return StatCollector.translateToLocalFormatted("warpdrive.guide.prefix", StatCollector.translateToLocalFormatted(itemStack.getUnlocalizedName() + ".name"));
 		}
+	}
+	
+	public String getStatusHeader() {
+		return "";
+	}
+	
+	public String getStatus() {
+		return getStatusPrefix()
+		     + getStatusHeader();
+	}
+	
+	public String getStatusHeaderInPureText() {
+		return Commons.removeFormatting( getStatusHeader() );
 	}
 	
 	// upgrade system

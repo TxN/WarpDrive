@@ -1,19 +1,19 @@
 package cr0s.warpdrive.command;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.data.StarMapRegistry;
+
 import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.config.WarpDriveConfig;
 
-/*
- *   /wdebug <dimension> <coordinates> <blockId> <Metadata> <actions>
- */
+import cpw.mods.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.DimensionManager;
 
 public class CommandDebug extends CommandBase
 {
@@ -47,45 +47,17 @@ public class CommandDebug extends CommandBase
 			int dim, x, y, z, metadata;
 			int block;
 			String actions;
-			try
-			{
-				String par = params[0].toLowerCase();
-				switch (par) {
-					case "world":
-					case "overworld":
-					case "0":
-						dim = 0;
-						break;
-					case "nether":
-					case "thenether":
-					case "-1":
-						dim = -1;
-						break;
-					case "s":
-					case "space":
-						dim = WarpDriveConfig.G_SPACE_DIMENSION_ID;
-						break;
-					case "h":
-					case "hyper":
-					case "hyperspace":
-						dim = WarpDriveConfig.G_HYPERSPACE_DIMENSION_ID;
-						break;
-					default:
-						dim = Integer.parseInt(par);
-						break;
-				}
-
+			try {
+				dim = StarMapRegistry.getDimensionId(params[0], (EntityPlayer) icommandsender);
 				x = Integer.parseInt(params[1]);
 				y = Integer.parseInt(params[2]);
 				z = Integer.parseInt(params[3]);
 				block = Integer.parseInt(params[4]);
 				metadata = Integer.parseInt(params[5]);
 				actions = params[6];
-			}
-			catch (Exception exception)
-			{
+			} catch (Exception exception) {
 				exception.printStackTrace();
-				WarpDrive.addChatMessage(player, getCommandUsage(icommandsender));
+				Commons.addChatMessage(player, getCommandUsage(icommandsender));
 				return;
 			}
 
@@ -156,7 +128,7 @@ public class CommandDebug extends CommandBase
 		}
 		else
 		{
-			WarpDrive.addChatMessage(player, getCommandUsage(icommandsender));
+			Commons.addChatMessage(player, getCommandUsage(icommandsender));
 		}
 	}
 

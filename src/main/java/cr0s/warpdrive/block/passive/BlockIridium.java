@@ -1,14 +1,19 @@
 package cr0s.warpdrive.block.passive;
 
+import cr0s.warpdrive.WarpDrive;
+
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
-import cr0s.warpdrive.WarpDrive;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockIridium extends Block {
+	
 	public BlockIridium() {
 		super(Material.iron);
 		setHardness(3.4F);
@@ -18,9 +23,10 @@ public class BlockIridium extends Block {
 		setBlockName("warpdrive.passive.IridiumBlock");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
-		blockIcon = par1IconRegister.registerIcon("warpdrive:passive/iridiumSide");
+	public void registerBlockIcons(IIconRegister iconRegister) {
+		blockIcon = iconRegister.registerIcon("warpdrive:passive/iridiumSide");
 	}
 	
 	@Override

@@ -1,19 +1,27 @@
 package cr0s.warpdrive.block.hull;
 
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.api.IBlockBase;
+import cr0s.warpdrive.api.IDamageReceiver;
+import cr0s.warpdrive.config.WarpDriveConfig;
 import cr0s.warpdrive.data.Vector3;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.BlockGlass;
 import net.minecraft.block.material.Material;
+import net.minecraft.item.EnumRarity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.api.IDamageReceiver;
-import cr0s.warpdrive.config.WarpDriveConfig;
 
-public class BlockHullGlass extends BlockColored implements IDamageReceiver {
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.common.util.ForgeDirection;
+
+public class BlockHullGlass extends BlockColored implements IBlockBase, IDamageReceiver {
+	
 	final byte tier;
 	
 	public BlockHullGlass(final byte tier) {
@@ -44,17 +52,34 @@ public class BlockHullGlass extends BlockColored implements IDamageReceiver {
 	}
 	
 	@Override
-	public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
-		if (world.isAirBlock(x, y, z)) {
+	public byte getTier(ItemStack itemStack) {
+		return tier;
+	}
+	
+	@Override
+	public EnumRarity getRarity(final ItemStack itemStack, final EnumRarity rarity) {
+		switch (getTier(itemStack)) {
+		case 0:	return EnumRarity.epic;
+		case 1:	return EnumRarity.common;
+		case 2:	return EnumRarity.uncommon;
+		case 3:	return EnumRarity.rare;
+		default: return rarity;
+		}
+	}
+	
+	@SideOnly(Side.CLIENT)
+	@Override
+	public boolean shouldSideBeRendered(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		if (blockAccess.isAirBlock(x, y, z)) {
 			return true;
 		}
 		ForgeDirection direction = ForgeDirection.getOrientation(side).getOpposite();
-		Block sideBlock = world.getBlock(x, y, z);
+		Block sideBlock = blockAccess.getBlock(x, y, z);
 		if (sideBlock instanceof BlockGlass || sideBlock instanceof BlockHullGlass) {
-			return world.getBlockMetadata(x, y, z)
-				!= world.getBlockMetadata(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
+			return blockAccess.getBlockMetadata(x, y, z)
+				!= blockAccess.getBlockMetadata(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
 		}
-		return !world.isSideSolid(x, y, z, direction, false);
+		return !blockAccess.isSideSolid(x, y, z, direction, false);
 	}
 	
 	@Override

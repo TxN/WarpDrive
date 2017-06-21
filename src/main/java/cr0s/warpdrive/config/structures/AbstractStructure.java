@@ -1,17 +1,14 @@
-/**
- *
- */
 package cr0s.warpdrive.config.structures;
 
+import cr0s.warpdrive.api.IXmlRepresentable;
+import cr0s.warpdrive.config.InvalidXmlException;
+import cr0s.warpdrive.config.XmlFileManager;
+import org.w3c.dom.Element;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import cr0s.warpdrive.config.InvalidXmlException;
-import cr0s.warpdrive.config.IXmlRepresentable;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 /**
@@ -38,28 +35,18 @@ public abstract class AbstractStructure extends WorldGenerator implements IXmlRe
 	}
 	
 	
-	abstract public AbstractInstance instantiate(Random random);
+	abstract public AbstractStructureInstance instantiate(Random random);
 	
 	@Override
-	public boolean loadFromXmlElement(Element element) throws InvalidXmlException {
+	public boolean loadFromXmlElement(final Element element) throws InvalidXmlException {
 		
-		NodeList nodeListVariables = element.getElementsByTagName("variable");
-		for (int variableIndex = 0; variableIndex < nodeListVariables.getLength(); variableIndex++) {
-			Element elementVariable = (Element) nodeListVariables.item(variableIndex);
-			String variableName = elementVariable.getAttribute("name");
-			String variableExpression = elementVariable.getTextContent();
+		final List<Element> listVariables = XmlFileManager.getChildrenElementByTagName(element, "variable");
+		for (Element elementVariable : listVariables) {
+			final String variableName = elementVariable.getAttribute("name");
+			final String variableExpression = elementVariable.getTextContent();
 			variables.put(variableName, variableExpression);
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * @deprecated Not implemented
-	 **/
-	@Deprecated
-	@Override
-	public void saveToXmlElement(Element element, Document document) throws InvalidXmlException {
-		throw new InvalidXmlException("Not implemented");
 	}
 }

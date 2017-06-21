@@ -1,14 +1,24 @@
 package cr0s.warpdrive.block.movement;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.api.IStarMapRegistryTileEntity;
+import cr0s.warpdrive.block.TileEntityAbstractEnergy;
+import cr0s.warpdrive.config.Dictionary;
+import cr0s.warpdrive.config.WarpDriveConfig;
+import cr0s.warpdrive.data.Jumpgate;
+import cr0s.warpdrive.data.StarMapRegistryItem.EnumStarMapEntryType;
+import cr0s.warpdrive.data.VectorI;
+import cr0s.warpdrive.event.JumpSequencer;
+import cr0s.warpdrive.world.SpaceTeleporter;
+
 import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -17,28 +27,15 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldServer;
+
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.ForgeDirection;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.TileEntityAbstractEnergy;
-import cr0s.warpdrive.config.Dictionary;
-import cr0s.warpdrive.config.WarpDriveConfig;
-import cr0s.warpdrive.data.Jumpgate;
-import cr0s.warpdrive.data.StarMapRegistryItem;
-import cr0s.warpdrive.data.VectorI;
-import cr0s.warpdrive.event.JumpSequencer;
-import cr0s.warpdrive.world.SpaceTeleporter;
 
-/**
- * @author Cr0s
- */
-public class TileEntityShipCore extends TileEntityAbstractEnergy {
+public class TileEntityShipCore extends TileEntityAbstractEnergy implements IStarMapRegistryTileEntity {
 	
 	public int dx, dz;
 	private int direction;
@@ -54,7 +51,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		IDLE(0),
 		BASIC_JUMP(1),		// 0-128
 		LONG_JUMP(2),		// 0-12800
-		TELEPORT(3),
+		// TELEPORT(3),
 		BEACON_JUMP(4),		// Jump ship by beacon
 		HYPERSPACE(5),		// Jump to/from Hyperspace
 		GATE_JUMP(6);		// Jump via jumpgate
@@ -75,8 +72,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 	private boolean isCooldownReported = false;
 	protected int randomWarmupAddition = 0;
 	
-	private int chestTeleportUpdateTicks = 0;
-	private final int registryUpdateInterval_ticks = 20 * WarpDriveConfig.SHIP_CORE_REGISTRY_UPDATE_INTERVAL_SECONDS;
+	private final int registryUpdateInterval_ticks = 20 * WarpDriveConfig.STARMAP_REGISTRY_UPDATE_INTERVAL_SECONDS;
 	private int registryUpdateTicks = 0;
 	private int bootTicks = 20;
 	private static final int logInterval_ticks = 20 * 60;
@@ -151,8 +147,8 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 			if (uuid == null || (uuid.getMostSignificantBits() == 0 && uuid.getLeastSignificantBits() == 0)) {
 				uuid = UUID.randomUUID();
 			}
-			// recovery registration, shouldn't be needed, in theory...
-			WarpDrive.starMap.updateInRegistry(new StarMapRegistryItem(this));
+			// recover registration, shouldn't be needed, in theory...
+			WarpDrive.starMap.updateInRegistry(this);
 			
 			TileEntity controllerFound = findControllerBlock();
 			if (controllerFound == null) {
@@ -208,22 +204,6 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		}
 		
 		switch (currentMode) {
-		case TELEPORT:
-			if (worldObj.isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord)) {
-				if (isChestSummonMode()) {
-					chestTeleportUpdateTicks++;
-					if (chestTeleportUpdateTicks >= 20) {
-						summonPlayersByChestCode();
-						chestTeleportUpdateTicks = 0;
-					}
-				} else {
-					teleportPlayersToSpace();
-				}
-			} else {
-				chestTeleportUpdateTicks = 0;
-			}
-			break;
-			
 		case BASIC_JUMP:
 		case LONG_JUMP:
 		case BEACON_JUMP:
@@ -354,7 +334,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 				continue;
 			}
 			
-			WarpDrive.addChatMessage((EntityPlayer) object, "[" + (!shipName.isEmpty() ? shipName : "ShipCore") + "] " + msg);
+			Commons.addChatMessage((EntityPlayer) object, "[" + (!shipName.isEmpty() ? shipName : "ShipCore") + "] " + msg);
 		}
 	}
 	
@@ -386,6 +366,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 			}
 		}
 		isolationBlocksCount = newCount;
+		double legacy_isolationRate = isolationRate;
 		if (isolationBlocksCount >= WarpDriveConfig.RADAR_MIN_ISOLATION_BLOCKS) {
 			isolationRate = Math.min(1.0, WarpDriveConfig.RADAR_MIN_ISOLATION_EFFECT
 					+ (isolationBlocksCount - WarpDriveConfig.RADAR_MIN_ISOLATION_BLOCKS) // bonus blocks
@@ -394,7 +375,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		} else {
 			isolationRate = 0.0D;
 		}
-		if (WarpDriveConfig.LOGGING_RADAR) {
+		if (WarpDriveConfig.LOGGING_RADAR && (WarpDrive.isDev || legacy_isolationRate != isolationRate)) {
 			WarpDrive.logger.info(this + " Isolation updated to " + isolationBlocksCount + " (" + String.format("%.1f", isolationRate * 100.0) + "%)");
 		}
 	}
@@ -446,7 +427,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		EntityPlayerMP entityPlayerMP = MinecraftServer.getServer().getConfigurationManager().func_152612_a(playerName);
 		StringBuilder reason = new StringBuilder();
 		if (!validateShipSpatialParameters(reason)) {
-			WarpDrive.addChatMessage(entityPlayerMP, "[" + (!shipName.isEmpty() ? shipName : "ShipCore") + "] §c" + reason.toString());
+			Commons.addChatMessage(entityPlayerMP, "[" + (!shipName.isEmpty() ? shipName : "ShipCore") + "] §c" + reason.toString());
 			return;
 		}
 		
@@ -480,7 +461,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		}
 		if (WarpDriveConfig.SHIP_SUMMON_MAX_RANGE >= 0 && distance > WarpDriveConfig.SHIP_SUMMON_MAX_RANGE) {
 			messageToAllPlayersOnShip("§c" + String.format("%1$s is too far away to be summoned (max. is %2$d m)", entityPlayer.getDisplayName(), WarpDriveConfig.SHIP_SUMMON_MAX_RANGE));
-			WarpDrive.addChatMessage(entityPlayer, "§c" + String.format("You are to far away to be summoned aboard '%1$s' (max. is %2$d m)", shipName, WarpDriveConfig.SHIP_SUMMON_MAX_RANGE));
+			Commons.addChatMessage(entityPlayer, "§c" + String.format("You are to far away to be summoned aboard '%1$s' (max. is %2$d m)", shipName, WarpDriveConfig.SHIP_SUMMON_MAX_RANGE));
 			return;
 		}
 		
@@ -584,7 +565,8 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		if ( (shipBack + shipFront) > WarpDriveConfig.SHIP_MAX_SIDE_SIZE
 		  || (shipLeft + shipRight) > WarpDriveConfig.SHIP_MAX_SIDE_SIZE
 		  || (shipDown + shipUp) > WarpDriveConfig.SHIP_MAX_SIDE_SIZE) {
-			reason.append("Ship is too big (max is " + WarpDriveConfig.SHIP_MAX_SIDE_SIZE + " per side)");
+			reason.append(String.format("Ship is too big (max is %d per side)",
+				WarpDriveConfig.SHIP_MAX_SIDE_SIZE));
 			return false;
 		}
 		
@@ -603,8 +585,11 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		}
 		
 		updateShipMassAndVolume();
-		if (!isUnlimited && shipMass > WarpDriveConfig.SHIP_VOLUME_MAX_ON_PLANET_SURFACE && isOnPlanet()) {
-			reason.append("Ship is too big for a planet (max is " + WarpDriveConfig.SHIP_VOLUME_MAX_ON_PLANET_SURFACE + " blocks)");
+		if ( !isUnlimited
+		  && shipMass > WarpDriveConfig.SHIP_VOLUME_MAX_ON_PLANET_SURFACE
+		  && WarpDrive.starMap.isPlanet(worldObj, xCoord, zCoord) ) {
+			reason.append(String.format("Ship is too big for a planet (max is %d blocks)",
+				WarpDriveConfig.SHIP_VOLUME_MAX_ON_PLANET_SURFACE));
 			return false;
 		}
 		
@@ -708,10 +693,12 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 		if (percent > 80F) {
 			return true;
 		} else if (percent <= 0.001) {
-			reason.append("Ship is not inside a jumpgate. Jump rejected. Nearest jumpgate is " + jumpgate.toNiceString());
+			reason.append(String.format("Ship is not inside a jumpgate. Jump rejected. Nearest jumpgate is %s",
+				jumpgate.toNiceString()));
 			return false;
 		} else {
-			reason.append("Ship is only " + percent + "% inside a jumpgate. Sorry, we'll loose too much crew as is, jump rejected.");
+			reason.append(String.format("Ship is only %.1f%% inside a jumpgate. Sorry, we'll loose too much crew as is, jump rejected.",
+				percent));
 			return false;
 		}
 	}
@@ -875,15 +862,23 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 			
 			if (currentMode != EnumShipCoreMode.HYPERSPACE) {
 				VectorI movement = controller.getMovement();
+				VectorI shipSize = new VectorI(controller.getFront() + 1 + controller.getBack(),
+				                               controller.getUp()    + 1 + controller.getDown(),
+				                               controller.getRight() + 1 + controller.getLeft());
+				final int maxDistance = controller.getMaxJumpDistance();
+				if (Math.abs(movement.x) - shipSize.x > maxDistance) {
+					movement.x = (int) Math.signum(movement.x) * (shipSize.x + maxDistance);
+				}
+				if (Math.abs(movement.y) - shipSize.y > maxDistance) {
+					movement.y = (int) Math.signum(movement.y) * (shipSize.y + maxDistance);
+				}
+				if (Math.abs(movement.z) - shipSize.z > maxDistance) {
+					movement.z = (int) Math.signum(movement.z) * (shipSize.z + maxDistance);
+				}
 				moveX = dx * movement.x - dz * movement.z;
 				moveY = movement.y;
 				moveZ = dz * movement.x + dx * movement.z;
-				if (currentMode == EnumShipCoreMode.BASIC_JUMP) {
-					// VectorI sizes = new VectorI(controller.getBack() + controller.getFront(), controller.getDown() + controller.getUp(), controller.getLeft() + controller.getRight());
-					// moveX += Math.signum((double)moveX) * Math.abs(dx * sizes.x - dz * sizes.z);
-					// moveY += Math.signum((double)moveY) * (sizes.y);
-					// moveZ += Math.signum((double)moveZ) * Math.abs(dz * sizes.x + dx * sizes.z);
-				} else if (currentMode == EnumShipCoreMode.LONG_JUMP) {
+				if (currentMode == EnumShipCoreMode.LONG_JUMP) {
 					moveX *= 100;
 					moveZ *= 100;
 				}
@@ -897,122 +892,6 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 					false, 0, 0, 0);
 			jump.enable();
 		}
-	}
-	
-	private void teleportPlayersToSpace() {
-		if (worldObj.provider.dimensionId != WarpDriveConfig.G_SPACE_DIMENSION_ID) {
-			AxisAlignedBB axisalignedbb = AxisAlignedBB.getBoundingBox(xCoord - 2, yCoord - 1, zCoord - 2, xCoord + 2, yCoord + 4, zCoord + 2);
-			List list = worldObj.getEntitiesWithinAABBExcludingEntity(null, axisalignedbb);
-			
-			WorldServer spaceWorld = MinecraftServer.getServer().worldServerForDimension(WarpDriveConfig.G_SPACE_DIMENSION_ID);
-			if (spaceWorld == null) {
-				String msg = "Unable to load Space dimension " + WarpDriveConfig.G_SPACE_DIMENSION_ID + ", aborting teleportation.";
-				messageToAllPlayersOnShip(msg);
-				return;
-			}
-			for (Object o : list) {
-				if (!energy_consume(WarpDriveConfig.SHIP_TELEPORT_ENERGY_PER_ENTITY, false)) {
-					return;
-				}
-				
-				Entity entity = (Entity) o;
-				int x = MathHelper.floor_double(entity.posX);
-				int z = MathHelper.floor_double(entity.posZ);
-				// int y = MathHelper.floor_double(entity.posY);
-				int newY;
-				
-				for (newY = 254; newY > 0; newY--) {
-					if (spaceWorld.getBlock(x, newY, z).isAssociatedBlock(Blocks.wool)) {
-						break;
-					}
-				}
-				
-				if (newY <= 0) {
-					newY = 254;
-				}
-				
-				if (entity instanceof EntityPlayerMP) {
-					((EntityPlayerMP) entity).mcServer.getConfigurationManager().transferPlayerToDimension(((EntityPlayerMP) entity),
-							WarpDriveConfig.G_SPACE_DIMENSION_ID,
-							new SpaceTeleporter(DimensionManager.getWorld(WarpDriveConfig.G_SPACE_DIMENSION_ID), 0, x, 256, z));
-					
-					if (spaceWorld.isAirBlock(x, newY, z)) {
-						spaceWorld.setBlock(x, newY, z, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x + 1, newY, z, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x - 1, newY, z, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x, newY, z + 1, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x, newY, z - 1, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x + 1, newY, z + 1, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x - 1, newY, z - 1, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x + 1, newY, z - 1, Blocks.stone, 0, 2);
-						spaceWorld.setBlock(x - 1, newY, z + 1, Blocks.stone, 0, 2);
-					}
-					
-					((EntityPlayerMP) entity).setPositionAndUpdate(x + 0.5D, newY + 2.0D, z + 0.5D);
-					((EntityPlayerMP) entity).sendPlayerAbilities();
-				}
-			}
-		}
-	}
-	
-	private void summonPlayersByChestCode() {
-		if (worldObj.getTileEntity(xCoord, yCoord + 1, zCoord) == null) {
-			return;
-		}
-		
-		TileEntityChest chest = (TileEntityChest) worldObj.getTileEntity(xCoord, yCoord + 1, zCoord);
-		EntityPlayerMP player;
-		
-		for (int i = 0; i < MinecraftServer.getServer().getConfigurationManager().playerEntityList.size(); i++) {
-			player = (EntityPlayerMP) MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(i);
-			
-			if (checkPlayerInventory(chest, player)) {
-				WarpDrive.logger.info(this + " Summoning " + player.getDisplayName());
-				summonPlayer(player, xCoord, yCoord + 2, zCoord);
-			}
-		}
-	}
-	
-	private static boolean checkPlayerInventory(TileEntityChest chest, EntityPlayerMP player) {
-		Boolean result = false;
-		final int MIN_KEY_LENGTH = 5;
-		int keyLength = 0;
-		
-		for (int index = 0; index < chest.getSizeInventory(); index++) {
-			ItemStack chestItem = chest.getStackInSlot(index);
-			ItemStack playerItem = player.inventory.getStackInSlot(9 + index);
-			
-			if (chestItem == null) {
-				continue;
-			}
-			
-			if (playerItem == null || chestItem != playerItem
-			  || chestItem.getItemDamage() != playerItem.getItemDamage()
-			  || chestItem.stackSize != playerItem.stackSize) {
-				return false;
-			} else {
-				result = true;
-			}
-			
-			keyLength++;
-		}
-		
-		if (keyLength < MIN_KEY_LENGTH) {
-			WarpDrive.logger.info("[ChestCode] Key is too short: " + keyLength + " < " + MIN_KEY_LENGTH);
-			return false;
-		}
-		
-		return result;
-	}
-	
-	private Boolean isChestSummonMode() {
-		TileEntity tileEntity = worldObj.getTileEntity(xCoord, yCoord + 1, zCoord);
-		
-		if (tileEntity != null) {
-			return (tileEntity instanceof TileEntityChest);
-		}
-		
-		return false;
 	}
 	
 	private static boolean isOutsideBB(AxisAlignedBB axisalignedbb, int x, int y, int z) {
@@ -1030,9 +909,6 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 	
 	public static int calculateRequiredEnergy(EnumShipCoreMode enumShipCoreMode, int shipVolume, int jumpDistance) {
 		switch (enumShipCoreMode) {
-		case TELEPORT:
-			return WarpDriveConfig.SHIP_TELEPORT_ENERGY_PER_ENTITY;
-			
 		case BASIC_JUMP:
 			return (WarpDriveConfig.SHIP_NORMALJUMP_ENERGY_PER_BLOCK * shipVolume) + (WarpDriveConfig.SHIP_NORMALJUMP_ENERGY_PER_DISTANCE * jumpDistance);
 			
@@ -1143,7 +1019,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 			uuid = UUID.randomUUID();
 		}
 		shipName = tag.getString("corefrequency") + tag.getString("shipName");	// coreFrequency is the legacy tag name
-		isolationBlocksCount = tag.getInteger("isolation");
+		isolationRate = tag.getDouble("isolationRate");
 		cooldownTime = tag.getInteger("cooldownTime");
 		jumpCount = tag.getInteger("jumpCount");
 	}
@@ -1156,7 +1032,7 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 			tag.setLong("uuidLeast", uuid.getLeastSignificantBits());
 		}
 		tag.setString("shipName", shipName);
-		tag.setInteger("isolation", isolationBlocksCount);
+		tag.setDouble("isolationRate", isolationRate);
 		tag.setInteger("cooldownTime", cooldownTime);
 		tag.setInteger("jumpCount", jumpCount);
 	}
@@ -1183,15 +1059,51 @@ public class TileEntityShipCore extends TileEntityAbstractEnergy {
 			return;
 		}
 		
-		WarpDrive.starMap.updateInRegistry(new StarMapRegistryItem(this));
+		WarpDrive.starMap.updateInRegistry(this);
 	}
 	
 	@Override
 	public void invalidate() {
 		if (!worldObj.isRemote) {
-			WarpDrive.starMap.removeFromRegistry(new StarMapRegistryItem(this));
+			WarpDrive.starMap.removeFromRegistry(this);
 		}
 		super.invalidate();
+	}
+	
+	// IStarMapRegistryTileEntity overrides
+	@Override
+	public String getStarMapType() {
+		return EnumStarMapEntryType.SHIP.getName();
+	}
+	
+	@Override
+	public UUID getUUID() {
+		return uuid;
+	}
+	
+	@Override
+	public AxisAlignedBB getStarMapArea() {
+		return AxisAlignedBB.getBoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+	}
+	
+	@Override
+	public int getMass() {
+		return shipMass;
+	}
+	
+	@Override
+	public double getIsolationRate() {
+		return isolationRate;
+	}
+	
+	@Override
+	public String getStarMapName() {
+		return shipName;
+	}
+	
+	@Override
+	public void onBlockUpdatedInArea(final VectorI vector, final Block block, final int metadata) {
+		// no operation
 	}
 	
 	@Override

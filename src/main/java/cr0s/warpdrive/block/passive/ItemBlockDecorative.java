@@ -1,8 +1,9 @@
 package cr0s.warpdrive.block.passive;
 
+import cr0s.warpdrive.data.EnumDecorativeType;
+
 import java.util.List;
 
-import cr0s.warpdrive.data.EnumDecorativeType;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -14,7 +15,7 @@ public class ItemBlockDecorative extends ItemBlock {
 	public ItemBlockDecorative(Block block) {
 		super(block);
 		setHasSubtypes(true);
-		setUnlocalizedName("warpdrive.passive.decorative");
+		setUnlocalizedName("warpdrive.decoration.decorative");
 	}
 	
 	@Override
@@ -34,6 +35,6 @@ public class ItemBlockDecorative extends ItemBlock {
 		if (itemstack == null) {
 			return getUnlocalizedName();
 		}
-		return "tile.warpdrive.passive." + EnumDecorativeType.get(itemstack.getItemDamage()).unlocalizedName;
+		return "tile.warpdrive.decoration.decorative." + EnumDecorativeType.get(itemstack.getItemDamage()).unlocalizedName;
 	}
 }

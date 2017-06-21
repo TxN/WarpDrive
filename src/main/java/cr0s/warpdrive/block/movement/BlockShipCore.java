@@ -1,10 +1,13 @@
 package cr0s.warpdrive.block.movement;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+import cr0s.warpdrive.data.EnumComponentType;
+import cr0s.warpdrive.item.ItemComponent;
+
 import java.util.ArrayList;
 import java.util.Random;
 
-import cr0s.warpdrive.data.EnumComponentType;
-import cr0s.warpdrive.item.ItemComponent;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.item.EntityTNTPrimed;
@@ -14,10 +17,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockShipCore extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	private static final int ICON_BOTTOM = 1;
@@ -31,19 +37,21 @@ public class BlockShipCore extends BlockAbstractContainer {
 		setBlockName("warpdrive.movement.ShipCore");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[5];
-		iconBuffer[ICON_SIDE_INACTIVE] = par1IconRegister.registerIcon("warpdrive:movement/shipCoreSideInactive");
-		iconBuffer[ICON_BOTTOM] = par1IconRegister.registerIcon("warpdrive:movement/shipCoreBottom");
-		iconBuffer[ICON_TOP] = par1IconRegister.registerIcon("warpdrive:movement/shipCoreTop");
-		iconBuffer[ICON_SIDE_ACTIVATED] = par1IconRegister.registerIcon("warpdrive:movement/shipCoreSideActive");
-		iconBuffer[ICON_SIDE_HEATED] = par1IconRegister.registerIcon("warpdrive:movement/shipCoreSideHeated");
+		iconBuffer[ICON_SIDE_INACTIVE ] = iconRegister.registerIcon("warpdrive:movement/shipCoreSideInactive");
+		iconBuffer[ICON_BOTTOM        ] = iconRegister.registerIcon("warpdrive:movement/shipCoreBottom");
+		iconBuffer[ICON_TOP           ] = iconRegister.registerIcon("warpdrive:movement/shipCoreTop");
+		iconBuffer[ICON_SIDE_ACTIVATED] = iconRegister.registerIcon("warpdrive:movement/shipCoreSideActive");
+		iconBuffer[ICON_SIDE_HEATED   ] = iconRegister.registerIcon("warpdrive:movement/shipCoreSideHeated");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		int metadata  = world.getBlockMetadata(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		final int metadata  = blockAccess.getBlockMetadata(x, y, z);
 		if (side == 0) {
 			return iconBuffer[ICON_BOTTOM];
 		} else if (side == 1) {
@@ -61,6 +69,7 @@ public class BlockShipCore extends BlockAbstractContainer {
 		return null;
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		if (side == 0) {
@@ -130,9 +139,9 @@ public class BlockShipCore extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityShipCore) {
-				WarpDrive.addChatMessage(entityPlayer, ((TileEntityShipCore)tileEntity).getStatus());
+				Commons.addChatMessage(entityPlayer, ((TileEntityShipCore) tileEntity).getStatus());
 				return true;
 			}
 		}

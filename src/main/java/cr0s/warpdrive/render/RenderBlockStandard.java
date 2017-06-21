@@ -3,10 +3,12 @@ package cr0s.warpdrive.render;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
+
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 // wrapper to native classes to renderId is non-zero so we don't render faces when player camera is inside the block
 public class RenderBlockStandard implements ISimpleBlockRenderingHandler {
+	
 	public static int renderId = 0;
 	public static RenderBlockStandard instance = new RenderBlockStandard();
 	
@@ -16,7 +18,7 @@ public class RenderBlockStandard implements ISimpleBlockRenderingHandler {
 	}
 	
 	@Override
-	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
+	public boolean renderWorldBlock(IBlockAccess blockAccess, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
 		return renderer.renderStandardBlock(block, x, y, z);
 	}
 	

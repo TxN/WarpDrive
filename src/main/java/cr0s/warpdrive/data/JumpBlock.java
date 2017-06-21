@@ -1,28 +1,63 @@
 package cr0s.warpdrive.data;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-
-import net.minecraft.block.*;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.api.IBlockTransformer;
 import cr0s.warpdrive.api.ITransformation;
 import cr0s.warpdrive.block.detection.BlockMonitor;
 import cr0s.warpdrive.compat.CompatForgeMultipart;
 import cr0s.warpdrive.config.WarpDriveConfig;
-import cr0s.warpdrive.config.filler.Filler;
+import cr0s.warpdrive.config.Filler;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockAnvil;
+import net.minecraft.block.BlockBed;
+import net.minecraft.block.BlockButton;
+import net.minecraft.block.BlockChest;
+import net.minecraft.block.BlockCocoa;
+import net.minecraft.block.BlockDispenser;
+import net.minecraft.block.BlockDoor;
+import net.minecraft.block.BlockEndPortalFrame;
+import net.minecraft.block.BlockEnderChest;
+import net.minecraft.block.BlockFenceGate;
+import net.minecraft.block.BlockFurnace;
+import net.minecraft.block.BlockHopper;
+import net.minecraft.block.BlockHugeMushroom;
+import net.minecraft.block.BlockLadder;
+import net.minecraft.block.BlockLever;
+import net.minecraft.block.BlockLog;
+import net.minecraft.block.BlockPistonBase;
+import net.minecraft.block.BlockPistonExtension;
+import net.minecraft.block.BlockPistonMoving;
+import net.minecraft.block.BlockPortal;
+import net.minecraft.block.BlockPumpkin;
+import net.minecraft.block.BlockRailBase;
+import net.minecraft.block.BlockRedstoneDiode;
+import net.minecraft.block.BlockSign;
+import net.minecraft.block.BlockSkull;
+import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockTorch;
+import net.minecraft.block.BlockTrapDoor;
+import net.minecraft.block.BlockTripWireHook;
+import net.minecraft.block.BlockVine;
+import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+
+import net.minecraftforge.common.util.Constants;
 
 public class JumpBlock {
+	
 	public Block block;
 	public int blockMeta;
 	public TileEntity blockTileEntity;
@@ -34,7 +69,7 @@ public class JumpBlock {
 	
 	public JumpBlock() {
 	}
-
+	
 	public JumpBlock(Block block, int blockMeta, TileEntity tileEntity, int x, int y, int z) {
 		this.block = block;
 		this.blockMeta = blockMeta;
@@ -59,7 +94,7 @@ public class JumpBlock {
 		}
 		block = filler.block;
 		blockMeta = filler.metadata;
-		blockNBT = (filler.tag != null) ? (NBTTagCompound) filler.tag.copy() : null;
+		blockNBT = (filler.nbtTagCompound != null) ? (NBTTagCompound) filler.nbtTagCompound.copy() : null;
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -180,14 +215,14 @@ public class JumpBlock {
 		}
 		
 		switch (rotationSteps) {
-			case 1:
-				return mrot[blockMeta];
-			case 2:
-				return mrot[mrot[blockMeta]];
-			case 3:
-				return mrot[mrot[mrot[blockMeta]]];
-			default:
-				return blockMeta;
+		case 1:
+			return mrot[blockMeta];
+		case 2:
+			return mrot[mrot[blockMeta]];
+		case 3:
+			return mrot[mrot[mrot[blockMeta]]];
+		default:
+			return blockMeta;
 		}
 	}
 	
@@ -309,7 +344,10 @@ public class JumpBlock {
 		if (tileEntity != null) {
 			Class<?> teClass = tileEntity.getClass();
 			if (WarpDriveConfig.LOGGING_JUMPBLOCKS) {
-				WarpDrive.logger.info("Tile at " + x + " " + y + " " + z + " is " + teClass + " derived from " + teClass.getSuperclass());
+				WarpDrive.logger.info(String.format("Refreshing clients at %d %d %d with %s derived from %s",
+				                                    x, y, z,
+				                                    teClass,
+				                                    teClass.getSuperclass()));
 			}
 			try {
 				String superClassName = teClass.getSuperclass().getName();
@@ -413,7 +451,7 @@ public class JumpBlock {
 	
 	public void writeToNBT(NBTTagCompound tag) {
 		tag.setString("block", Block.blockRegistry.getNameForObject(block));
-		tag.setByte("blockMeta", (byte)blockMeta);
+		tag.setByte("blockMeta", (byte) blockMeta);
 		if (blockTileEntity != null) {
 			NBTTagCompound tagCompound = new NBTTagCompound();
 			blockTileEntity.writeToNBT(tagCompound);
@@ -434,6 +472,91 @@ public class JumpBlock {
 				}
 			}
 			tag.setTag("externals", tagCompoundExternals);
+		}
+	}
+	
+	public void removeUniqueIDs() {
+		removeUniqueIDs(blockNBT);
+	}
+	
+	public static void removeUniqueIDs(final NBTTagCompound tagCompound) {
+		if (tagCompound == null) {
+			return;
+		}
+		// ComputerCraft computer
+		if (tagCompound.hasKey("computerID")) {
+			tagCompound.removeTag("computerID");
+			tagCompound.removeTag("label");
+		}
+		// WarpDrive any OC connected tile
+		if (tagCompound.hasKey("oc:node")) {
+			tagCompound.removeTag("oc:node");
+		}
+		// OpenComputers case
+		if (tagCompound.hasKey("oc:computer")) {
+			NBTTagCompound tagComputer = tagCompound.getCompoundTag("oc:computer");
+			tagComputer.removeTag("chunkX");
+			tagComputer.removeTag("chunkZ");
+			tagComputer.removeTag("components");
+			tagComputer.removeTag("dimension");
+			tagComputer.removeTag("node");
+			tagCompound.setTag("oc:computer", tagComputer);
+		}
+		// OpenComputers case
+		if (tagCompound.hasKey("oc:items")) {
+			NBTTagList tagListItems = tagCompound.getTagList("oc:items", Constants.NBT.TAG_COMPOUND);
+			for (int indexItemSlot = 0; indexItemSlot < tagListItems.tagCount(); indexItemSlot++) {
+				NBTTagCompound tagCompoundItemSlot = tagListItems.getCompoundTagAt(indexItemSlot);
+				NBTTagCompound tagCompoundItem = tagCompoundItemSlot.getCompoundTag("item");
+				NBTTagCompound tagCompoundTag = tagCompoundItem.getCompoundTag("tag");
+				NBTTagCompound tagCompoundOCData = tagCompoundTag.getCompoundTag("oc:data");
+				NBTTagCompound tagCompoundNode = tagCompoundOCData.getCompoundTag("node");
+				if (tagCompoundNode.hasKey("address")) {
+					tagCompoundNode.removeTag("address");
+				}
+			}
+		}
+		
+		// OpenComputers keyboard
+		if (tagCompound.hasKey("oc:keyboard")) {
+			NBTTagCompound tagCompoundKeyboard = tagCompound.getCompoundTag("oc:keyboard");
+			tagCompoundKeyboard.removeTag("node");
+		}
+		
+		// OpenComputers screen
+		if (tagCompound.hasKey("oc:hasPower")) {
+			tagCompound.removeTag("node");
+		}
+		
+		// Immersive Engineering & Thermal Expansion
+		if (tagCompound.hasKey("Owner")) {
+			tagCompound.setString("Owner", "None");
+		}
+		
+		// Mekanism
+		if (tagCompound.hasKey("owner")) {
+			tagCompound.setString("owner", "None");
+		}
+	}
+	
+	public static void emptyEnergyStorage(final NBTTagCompound tagCompound) {
+		// IC2
+		if (tagCompound.hasKey("energy")) {
+			// energy_consume((int)Math.round(blockNBT.getDouble("energy")), true);
+			tagCompound.setDouble("energy", 0);
+		}
+		// Gregtech
+		if (tagCompound.hasKey("mStoredEnergy")) {
+			tagCompound.setInteger("mStoredEnergy", 0);
+		}
+		// Immersive Engineering & Thermal Expansion
+		if (tagCompound.hasKey("Energy")) {
+			// energy_consume(blockNBT.getInteger("Energy"), true);
+			tagCompound.setInteger("Energy", 0);
+		}
+		// Mekanism
+		if (tagCompound.hasKey("electricityStored")) {
+			tagCompound.setDouble("electricityStored", 0);
 		}
 	}
 	

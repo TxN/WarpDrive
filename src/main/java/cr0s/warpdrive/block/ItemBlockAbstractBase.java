@@ -1,8 +1,10 @@
 package cr0s.warpdrive.block;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.api.IBlockBase;
+
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumRarity;
@@ -13,7 +15,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 
-import java.util.List;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemBlockAbstractBase extends ItemBlock {
 	
@@ -26,8 +29,13 @@ public class ItemBlockAbstractBase extends ItemBlock {
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IIcon getIconFromDamage(int p_77617_1_) {
-		return field_150939_a.getIcon(2, p_77617_1_);
+	public IIcon getIconFromDamage(int damage) {
+		return field_150939_a.getIcon(2, damage);
+	}
+	
+	@Override
+	public int getColorFromItemStack(ItemStack itemStack, int indexPass) {
+		return Block.getBlockFromItem(itemStack.getItem()).getRenderColor(itemStack.getItemDamage());
 	}
 	
 	@Override
@@ -48,10 +56,10 @@ public class ItemBlockAbstractBase extends ItemBlock {
 	@Override
 	public EnumRarity getRarity(ItemStack itemStack) {
 		if ( itemStack == null
-		  || !(field_150939_a instanceof BlockAbstractContainer) ) {
+		  || !(field_150939_a instanceof IBlockBase) ) {
 			return super.getRarity(itemStack);
 		}
-		return ((BlockAbstractContainer)field_150939_a).getRarity(itemStack, super.getRarity(itemStack));
+		return ((IBlockBase) field_150939_a).getRarity(itemStack, super.getRarity(itemStack));
 	}
 	
 	private String getStatus(final NBTTagCompound nbtTagCompound, final int metadata) {
@@ -60,7 +68,7 @@ public class ItemBlockAbstractBase extends ItemBlock {
 			if (nbtTagCompound != null) {
 				tileEntity.readFromNBT(nbtTagCompound);
 			}
-			return ((TileEntityAbstractBase)tileEntity).getStatus();
+			return ((TileEntityAbstractBase) tileEntity).getStatus();
 			
 		} else {
 			return "";
@@ -73,14 +81,14 @@ public class ItemBlockAbstractBase extends ItemBlock {
 		
 		String tooltipName1 = getUnlocalizedName(itemStack) + ".tooltip";
 		if (StatCollector.canTranslate(tooltipName1)) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName1));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName1));
 		}
 		
 		String tooltipName2 = getUnlocalizedName() + ".tooltip";
 		if ((!tooltipName1.equals(tooltipName2)) && StatCollector.canTranslate(tooltipName2)) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName2));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName2));
 		}
 		
-		WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(getStatus(itemStack.getTagCompound(), itemStack.getItemDamage())));
+		Commons.addTooltip(list, StatCollector.translateToLocalFormatted(getStatus(itemStack.getTagCompound(), itemStack.getItemDamage())));
 	}
 }

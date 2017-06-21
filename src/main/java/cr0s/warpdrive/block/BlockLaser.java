@@ -1,5 +1,7 @@
 package cr0s.warpdrive.block;
 
+import cr0s.warpdrive.Commons;
+
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
@@ -9,9 +11,13 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockLaser extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 
 	private static final int ICON_SIDE = 0;
@@ -22,14 +28,16 @@ public class BlockLaser extends BlockAbstractContainer {
 		setResistance(20.0F * 5 / 3);
 		setBlockName("warpdrive.machines.Laser");
 	}
-
+	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[1];
 		// Solid textures
-		iconBuffer[ICON_SIDE] = par1IconRegister.registerIcon("warpdrive:laserSide");
+		iconBuffer[ICON_SIDE] = iconRegister.registerIcon("warpdrive:laserSide");
 	}
-
+	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		return iconBuffer[ICON_SIDE];
@@ -66,9 +74,9 @@ public class BlockLaser extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityLaser) {
-				WarpDrive.addChatMessage(entityPlayer, ((TileEntityLaser)tileEntity).getStatus());
+				Commons.addChatMessage(entityPlayer, ((TileEntityLaser) tileEntity).getStatus());
 				return true;
 			}
 		}

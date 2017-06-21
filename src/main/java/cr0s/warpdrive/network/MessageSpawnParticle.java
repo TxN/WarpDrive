@@ -1,26 +1,34 @@
 package cr0s.warpdrive.network;
 
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.config.WarpDriveConfig;
+import cr0s.warpdrive.data.Vector3;
+import io.netty.buffer.ByteBuf;
+
 import java.nio.charset.StandardCharsets;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.*;
+import net.minecraft.client.particle.EntityBreakingFX;
+import net.minecraft.client.particle.EntityExplodeFX;
+import net.minecraft.client.particle.EntityFX;
+import net.minecraft.client.particle.EntityFireworkSparkFX;
+import net.minecraft.client.particle.EntityFlameFX;
+import net.minecraft.client.particle.EntitySnowShovelFX;
+import net.minecraft.client.particle.EntitySpellParticleFX;
 import net.minecraft.init.Items;
 import net.minecraft.world.World;
-import io.netty.buffer.ByteBuf;
+
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.config.WarpDriveConfig;
-import cr0s.warpdrive.data.Vector3;
-
 
 public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSpawnParticle, IMessage> {
 	
 	private String type;
+	private byte quantity;
 	private Vector3 origin;
 	private Vector3 direction;
 	private float baseRed;
@@ -34,10 +42,11 @@ public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSp
 		// required on receiving side
 	}
 	
-	public MessageSpawnParticle(final String type, final Vector3 origin, final Vector3 direction,
+	public MessageSpawnParticle(final String type, final byte quantity, final Vector3 origin, final Vector3 direction,
 	                            final float baseRed, final float baseGreen, final float baseBlue,
 	                            final float fadeRed, final float fadeGreen, final float fadeBlue) {
 		this.type = type;
+		this.quantity = quantity;
 		this.origin = origin;
 		this.direction = direction;
 		this.baseRed = baseRed;
@@ -53,6 +62,8 @@ public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSp
 		int typeSize = buffer.readByte();
 		type = buffer.toString(buffer.readerIndex(), typeSize, StandardCharsets.US_ASCII);
 		buffer.skipBytes(typeSize);
+		
+		quantity = buffer.readByte();
 		
 		double x = buffer.readDouble();
 		double y = buffer.readDouble();
@@ -76,6 +87,7 @@ public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSp
 	public void toBytes(ByteBuf buffer) {
 		buffer.writeByte(type.length());
 		buffer.writeBytes(type.getBytes(StandardCharsets.US_ASCII), 0, type.length());
+		buffer.writeByte(quantity);
 		buffer.writeDouble(origin.x);
 		buffer.writeDouble(origin.y);
 		buffer.writeDouble(origin.z);
@@ -102,14 +114,15 @@ public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSp
 		// adjust color as needed
 		EntityFX effect;
 		double noiseLevel = direction.getMagnitude() * 0.35D;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < quantity; i++) {
 			Vector3 directionRandomized = new Vector3(
 					direction.x + noiseLevel * (worldObj.rand.nextFloat() - worldObj.rand.nextFloat()),
 					direction.y + noiseLevel * (worldObj.rand.nextFloat() - worldObj.rand.nextFloat()),
 					direction.z + noiseLevel * (worldObj.rand.nextFloat() - worldObj.rand.nextFloat()));
 			switch (type) {
-			case "explode":
 			default:
+				WarpDrive.logger.error(String.format("Invalid particle type '%s' at %s", type, origin.toString()));
+			case "explode":
 				effect = new EntityExplodeFX(worldObj, origin.x, origin.y, origin.z, directionRandomized.x, directionRandomized.y, directionRandomized.z);
 				break;
 			
@@ -131,6 +144,10 @@ public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSp
 			case "snowshovel":
 				effect = new EntitySnowShovelFX(worldObj, origin.x, origin.y, origin.z, directionRandomized.x, directionRandomized.y, directionRandomized.z);
 				break;
+			
+			case "mobSpell":
+				effect = new EntitySpellParticleFX(worldObj, origin.x, origin.y, origin.z, directionRandomized.x, directionRandomized.y, directionRandomized.z);
+				break;
 			} 
 			if (baseRed >= 0.0F && baseGreen >= 0.0F && baseBlue >= 0.0F) {
 				effect.setRBGColorF(baseRed, baseGreen, baseBlue);
@@ -149,9 +166,10 @@ public class MessageSpawnParticle implements IMessage, IMessageHandler<MessageSp
 		}
 		
 		if (WarpDriveConfig.LOGGING_EFFECTS) {
-			WarpDrive.logger.info("Received particle effect '" + messageSpawnParticle.type + "' from " + messageSpawnParticle.origin + " toward " + messageSpawnParticle.direction
-				+ " as RGB " + messageSpawnParticle.baseRed + " " + messageSpawnParticle.baseGreen + " " + messageSpawnParticle.baseBlue
-				+ " fading to " + messageSpawnParticle.fadeRed + " " + messageSpawnParticle.fadeGreen + " " + messageSpawnParticle.fadeBlue);
+			WarpDrive.logger.info("Received particle effect '%s' x %d from %s towards %s as RGB %.2f %.2f %.2f fading to %.2f %.2f %.2f",
+				messageSpawnParticle.type, messageSpawnParticle.quantity, messageSpawnParticle.origin, messageSpawnParticle.direction,
+				messageSpawnParticle.baseRed, messageSpawnParticle.baseGreen, messageSpawnParticle.baseBlue,
+				messageSpawnParticle.fadeRed, messageSpawnParticle.fadeGreen, messageSpawnParticle.fadeBlue);
 		}
 		
 		messageSpawnParticle.handle(Minecraft.getMinecraft().theWorld);

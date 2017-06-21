@@ -1,16 +1,18 @@
 package cr0s.warpdrive.block.forcefield;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.api.IDamageReceiver;
 import cr0s.warpdrive.block.hull.BlockHullGlass;
 import cr0s.warpdrive.config.WarpDriveConfig;
-import cr0s.warpdrive.data.ForceFieldSetup;
 import cr0s.warpdrive.data.EnumPermissionNode;
+import cr0s.warpdrive.data.ForceFieldSetup;
 import cr0s.warpdrive.data.Vector3;
 import cr0s.warpdrive.data.VectorI;
 import cr0s.warpdrive.render.RenderBlockForceField;
+
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockGlass;
 import net.minecraft.block.material.Material;
@@ -31,14 +33,16 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.List;
-import java.util.Random;
-
 public class BlockForceField extends BlockAbstractForceField implements IDamageReceiver {
+	
 	@SideOnly(Side.CLIENT)
 	private IIcon[] icons;
+	
 	private static final float BOUNDING_TOLERANCE = 0.05F;
 	
 	public BlockForceField(final byte tier) {
@@ -58,8 +62,8 @@ public class BlockForceField extends BlockAbstractForceField implements IDamageR
 		return null;
 	}
 	
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public IIcon getIcon(int side, int metadata) {
 		return icons[metadata % 16];
 	}
@@ -83,14 +87,14 @@ public class BlockForceField extends BlockAbstractForceField implements IDamageR
 	@SideOnly(Side.CLIENT)
 	public void getSubBlocks(Item item, CreativeTabs creativeTab, List list) {
 		/* Hide in NEI
-		for (int i = 0; i < 16; ++i) {
+		for (int i = 0; i < 16; i++) {
 			list.add(new ItemStack(item, 1, i));
 		}
 		/**/
 	}
 	
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public void registerBlockIcons(IIconRegister iconRegister) {
 		icons = new IIcon[16];
 		
@@ -100,27 +104,30 @@ public class BlockForceField extends BlockAbstractForceField implements IDamageR
 	}
 	
 	@SideOnly(Side.CLIENT)
+	@Override
 	public int getRenderBlockPass() {
 		return 1;
 	}
 	
 	@SideOnly(Side.CLIENT)
+	@Override
 	public int getRenderType() {
 		return RenderBlockForceField.renderId;
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
-		if (world.isAirBlock(x, y, z)) {
+	public boolean shouldSideBeRendered(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		if (blockAccess.isAirBlock(x, y, z)) {
 			return true;
 		}
 		ForgeDirection direction = ForgeDirection.getOrientation(side).getOpposite();
-		Block sideBlock = world.getBlock(x, y, z);
+		Block sideBlock = blockAccess.getBlock(x, y, z);
 		if (sideBlock instanceof BlockGlass || sideBlock instanceof BlockHullGlass || sideBlock instanceof BlockForceField) {
-			return world.getBlockMetadata(x, y, z)
-				!= world.getBlockMetadata(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
+			return blockAccess.getBlockMetadata(x, y, z)
+				!= blockAccess.getBlockMetadata(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
 		}
-		return !world.isSideSolid(x, y, z, direction, false);
+		return !blockAccess.isSideSolid(x, y, z, direction, false);
 	}
 	
 	protected TileEntityForceFieldProjector getProjector(World world, int x, int y, int z) {
@@ -139,6 +146,7 @@ public class BlockForceField extends BlockAbstractForceField implements IDamageR
 		return null;
 	}
 	
+	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer entityPlayer) {
 		ForceFieldSetup forceFieldSetup = getForceFieldSetup(world, x, y, z);
 		if (forceFieldSetup != null) {
@@ -146,6 +154,7 @@ public class BlockForceField extends BlockAbstractForceField implements IDamageR
 		}
 	}
 	
+	@Override
 	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
 		ForceFieldSetup forceFieldSetup = getForceFieldSetup(world, x, y, z);
 		if (forceFieldSetup != null) {
@@ -166,6 +175,7 @@ public class BlockForceField extends BlockAbstractForceField implements IDamageR
 			x + 1 - BOUNDING_TOLERANCE, y + 1 - BOUNDING_TOLERANCE, z + 1 - BOUNDING_TOLERANCE);
 	}
 	
+	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity) {
 		if (world.isRemote) {
 			return;

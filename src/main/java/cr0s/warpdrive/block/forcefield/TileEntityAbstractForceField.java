@@ -1,6 +1,6 @@
 package cr0s.warpdrive.block.forcefield;
 
-import cpw.mods.fml.common.Optional;
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.WarpDrive;
 import cr0s.warpdrive.api.IBeamFrequency;
 import cr0s.warpdrive.block.TileEntityAbstractEnergy;
@@ -12,6 +12,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
+
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -19,7 +20,10 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.util.StatCollector;
 
+import cpw.mods.fml.common.Optional;
+
 public class TileEntityAbstractForceField extends TileEntityAbstractEnergy implements IBeamFrequency {
+	
 	// persistent properties
 	protected byte tier = -1;
 	protected int beamFrequency = -1;
@@ -83,29 +87,29 @@ public class TileEntityAbstractForceField extends TileEntityAbstractEnergy imple
 	
 	@Override
 	public void setBeamFrequency(final int parBeamFrequency) {
-		if (beamFrequency != parBeamFrequency && (parBeamFrequency <= BEAM_FREQUENCY_MAX) && (parBeamFrequency > 0)) {
+		if (beamFrequency != parBeamFrequency && (parBeamFrequency <= BEAM_FREQUENCY_MAX) && (parBeamFrequency > BEAM_FREQUENCY_MIN)) {
 			if (WarpDriveConfig.LOGGING_VIDEO_CHANNEL) {
 				WarpDrive.logger.info(this + " Beam frequency set from " + beamFrequency + " to " + parBeamFrequency);
 			}
-			if (worldObj != null) {
+			if (hasWorldObj()) {
 				ForceFieldRegistry.removeFromRegistry(this);
 			}
 			beamFrequency = parBeamFrequency;
 			vRGB = IBeamFrequency.getBeamColor(beamFrequency);
 		}
 		markDirty();
-		if (worldObj != null) {
+		if (hasWorldObj()) {
 			ForceFieldRegistry.updateInRegistry(this);
 		}
 	}
 	
 	String getBeamFrequencyStatus() {
 		if (beamFrequency == -1) {
-			return StatCollector.translateToLocalFormatted("warpdrive.beamFrequency.statusLine.undefined");
+			return StatCollector.translateToLocalFormatted("warpdrive.beam_frequency.statusLine.undefined");
 		} else if (beamFrequency < 0) {
-			return StatCollector.translateToLocalFormatted("warpdrive.beamFrequency.statusLine.invalid", beamFrequency);
+			return StatCollector.translateToLocalFormatted("warpdrive.beam_frequency.statusLine.invalid", beamFrequency);
 		} else {
-			return StatCollector.translateToLocalFormatted("warpdrive.beamFrequency.statusLine.valid", beamFrequency);
+			return StatCollector.translateToLocalFormatted("warpdrive.beam_frequency.statusLine.valid", beamFrequency);
 		}
 	}
 	
@@ -119,7 +123,7 @@ public class TileEntityAbstractForceField extends TileEntityAbstractEnergy imple
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 		tier = tag.getByte("tier");
-		setBeamFrequency(tag.getInteger("beamFrequency"));
+		setBeamFrequency(tag.getInteger(BEAM_FREQUENCY_TAG));
 		isEnabled = tag.getBoolean("isEnabled");
 	}
 	
@@ -127,7 +131,7 @@ public class TileEntityAbstractForceField extends TileEntityAbstractEnergy imple
 	public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
 		tag.setByte("tier", tier);
-		tag.setInteger("beamFrequency", beamFrequency);
+		tag.setInteger(BEAM_FREQUENCY_TAG, beamFrequency);
 		tag.setBoolean("isEnabled", isEnabled);
 	}
 	
@@ -149,7 +153,7 @@ public class TileEntityAbstractForceField extends TileEntityAbstractEnergy imple
 	// OpenComputer callback methods
 	@Callback
 	@Optional.Method(modid = "OpenComputers")
-	public Object[] enable(Context context, Arguments arguments) throws Exception {
+	public Object[] enable(Context context, Arguments arguments) {
 		return enable(argumentsOCtoCC(arguments));
 	}
 	
@@ -162,13 +166,17 @@ public class TileEntityAbstractForceField extends TileEntityAbstractEnergy imple
 		return new Integer[] { beamFrequency };
 	}
 	
-	public Object[] enable(Object[] arguments) throws Exception {
+	// Common OC/CC methods
+	public Object[] enable(Object[] arguments) {
 		if (arguments.length == 1) {
 			boolean enable;
 			try {
-				enable = toBool(arguments[0]);
+				enable = Commons.toBool(arguments[0]);
 			} catch (Exception exception) {
-				throw new Exception("Function expects a boolean value");
+				if (WarpDriveConfig.LOGGING_LUA) {
+					WarpDrive.logger.error(this + " LUA error on enable(): Boolean expected for 1st argument " + arguments[0]);
+				}
+				return new Object[] { isEnabled };
 			}
 			isEnabled = enable;
 		}
@@ -188,7 +196,7 @@ public class TileEntityAbstractForceField extends TileEntityAbstractEnergy imple
 				
 				case "beamFrequency":
 					if (arguments.length == 1) {
-						setBeamFrequency(toInt(arguments[0]));
+						setBeamFrequency(Commons.toInt(arguments[0]));
 					}
 					return new Integer[]{ beamFrequency };
 			}

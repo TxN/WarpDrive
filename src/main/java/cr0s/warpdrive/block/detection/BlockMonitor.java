@@ -1,5 +1,11 @@
 package cr0s.warpdrive.block.detection;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+import cr0s.warpdrive.data.CameraRegistryItem;
+import cr0s.warpdrive.render.ClientCameraHandler;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,13 +15,14 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
-import cr0s.warpdrive.data.CameraRegistryItem;
-import cr0s.warpdrive.render.ClientCameraHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockMonitor extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon iconFront;
+	@SideOnly(Side.CLIENT)
 	private IIcon iconSide;
 	
 	public BlockMonitor() {
@@ -24,18 +31,21 @@ public class BlockMonitor extends BlockAbstractContainer {
 		setBlockName("warpdrive.detection.Monitor");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconFront = iconRegister.registerIcon("warpdrive:detection/monitorFront");
 		iconSide = iconRegister.registerIcon("warpdrive:detection/monitorSide");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		int metadata  = world.getBlockMetadata(x, y, z);
+	public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+		int metadata  = blockAccess.getBlockMetadata(x, y, z);
 		return side == metadata ? iconFront : iconSide;
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		return side == 3 ? iconFront : iconSide;
@@ -49,16 +59,16 @@ public class BlockMonitor extends BlockAbstractContainer {
 		}
 		
 		if (entityPlayer.getHeldItem() == null) {
-			TileEntity tileEntity = world.getTileEntity(x, y, z);
+			final TileEntity tileEntity = world.getTileEntity(x, y, z);
 			
 			if (tileEntity instanceof TileEntityMonitor) {
-				int videoChannel = ((TileEntityMonitor)tileEntity).getVideoChannel();
+				final int videoChannel = ((TileEntityMonitor) tileEntity).getVideoChannel();
 				CameraRegistryItem camera = WarpDrive.cameras.getCameraByVideoChannel(world, videoChannel);
 				if (camera == null || entityPlayer.isSneaking()) {
-					WarpDrive.addChatMessage(entityPlayer, ((TileEntityMonitor)tileEntity).getStatus());
+					Commons.addChatMessage(entityPlayer, ((TileEntityMonitor) tileEntity).getStatus());
 					return true;
 				} else {
-					WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.monitor.viewingCamera",
+					Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.monitor.viewingCamera",
 							videoChannel,
 							camera.position.chunkPosX,
 							camera.position.chunkPosY,

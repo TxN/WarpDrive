@@ -1,6 +1,10 @@
 package cr0s.warpdrive.item;
 
+import cr0s.warpdrive.Commons;
 import cr0s.warpdrive.WarpDrive;
+
+import java.util.List;
+
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,10 +14,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 
-import java.util.List;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemCrystalToken extends Item {	
-	private final IIcon[] icons;
+	
+	@SideOnly(Side.CLIENT)
+	private IIcon[] icons;
+	
 	private static ItemStack[] itemStackCache;
 	private static final int COUNT = 6; 
 	
@@ -23,7 +31,6 @@ public class ItemCrystalToken extends Item {
 		setUnlocalizedName("warpdrive.tool.crystalToken");
 		setCreativeTab(WarpDrive.creativeTabWarpDrive);
 		
-		icons = new IIcon[COUNT];
 		itemStackCache = new ItemStack[COUNT];
 	}
 	
@@ -44,10 +51,12 @@ public class ItemCrystalToken extends Item {
 		return new ItemStack(WarpDrive.itemCrystalToken, amount, 0);
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerIcons(IIconRegister par1IconRegister) {
+	public void registerIcons(IIconRegister iconRegister) {
+		icons = new IIcon[COUNT];
 		for(int damage = 0; damage < COUNT; damage++) {
-			icons[damage] = par1IconRegister.registerIcon("warpdrive:tool/crystalToken" + damage);
+			icons[damage] = iconRegister.registerIcon("warpdrive:tool/crystal_token-" + damage);
 		}
 	}
 	
@@ -60,6 +69,7 @@ public class ItemCrystalToken extends Item {
 		return getUnlocalizedName();
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIconFromDamage(final int damage) {
 		if (damage >= 0 && damage < COUNT) {
@@ -90,12 +100,12 @@ public class ItemCrystalToken extends Item {
 		
 		String tooltipName1 = getUnlocalizedName(itemStack) + ".tooltip";
 		if (StatCollector.canTranslate(tooltipName1)) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName1, getSchematicName(itemStack)));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName1, getSchematicName(itemStack)));
 		}
 		
 		String tooltipName2 = getUnlocalizedName() + ".tooltip";
 		if ((!tooltipName1.equals(tooltipName2)) && StatCollector.canTranslate(tooltipName2)) {
-			WarpDrive.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName2, getSchematicName(itemStack)));
+			Commons.addTooltip(list, StatCollector.translateToLocalFormatted(tooltipName2, getSchematicName(itemStack)));
 		}
 	}
 }

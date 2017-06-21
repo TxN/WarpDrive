@@ -1,5 +1,9 @@
 package cr0s.warpdrive.block.weapon;
 
+import cr0s.warpdrive.Commons;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.block.BlockAbstractContainer;
+
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
@@ -10,10 +14,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.block.BlockAbstractContainer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockWeaponController extends BlockAbstractContainer {
+	
+	@SideOnly(Side.CLIENT)
 	private IIcon[] iconBuffer;
 	
 	private static final int ICON_TOP = 0;
@@ -27,14 +34,16 @@ public class BlockWeaponController extends BlockAbstractContainer {
 		setBlockName("warpdrive.weapon.WeaponController");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister iconRegister) {
 		iconBuffer = new IIcon[3];
-		iconBuffer[ICON_TOP] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerTop");
-		iconBuffer[ICON_BOTTOM] = par1IconRegister.registerIcon("warpdrive:movement/shipControllerBottom");
-		iconBuffer[ICON_SIDE] = par1IconRegister.registerIcon("warpdrive:weapon/weaponControllerSide");
+		iconBuffer[ICON_TOP] = iconRegister.registerIcon("warpdrive:movement/shipControllerTop");
+		iconBuffer[ICON_BOTTOM] = iconRegister.registerIcon("warpdrive:movement/shipControllerBottom");
+		iconBuffer[ICON_SIDE] = iconRegister.registerIcon("warpdrive:weapon/weaponControllerSide");
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public IIcon getIcon(int side, int metadata) {
 		if (side == 0) {
@@ -62,16 +71,20 @@ public class BlockWeaponController extends BlockAbstractContainer {
 	
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int side, float hitX, float hitY, float hitZ) {
+		if (world.isRemote) {
+			return false;
+		}
+		
 		if (entityPlayer.getHeldItem() == null) {
 			TileEntity tileEntity = world.getTileEntity(x, y, z);
 			if (tileEntity instanceof TileEntityWeaponController) {
-				WarpDrive.addChatMessage(entityPlayer, ((TileEntityWeaponController) tileEntity).getStatus());
+				Commons.addChatMessage(entityPlayer, ((TileEntityWeaponController) tileEntity).getStatus());
 			} else {
-				WarpDrive.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
+				Commons.addChatMessage(entityPlayer, StatCollector.translateToLocalFormatted("warpdrive.guide.prefix",
 						getLocalizedName()) + StatCollector.translateToLocalFormatted("warpdrive.error.badTileEntity"));
 				WarpDrive.logger.error("Block " + this + " with invalid tile entity " + tileEntity);
 			}
-			return false;
+			return true;
 		}
 		
 		return false;

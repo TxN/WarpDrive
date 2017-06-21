@@ -1,5 +1,8 @@
 package cr0s.warpdrive.data;
 
+
+import cr0s.warpdrive.event.ChunkHandler;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,8 +15,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
-import net.minecraftforge.common.util.ForgeDirection;
 
+import net.minecraftforge.common.util.ForgeDirection;
 
 /**
  * Generic 3D vector for efficient block manipulation.
@@ -89,50 +92,60 @@ public class VectorI implements Cloneable {
 		return new VectorI(x + side.offsetX, y + side.offsetY, z + side.offsetZ);
 	}
 	
-	public Block getBlock(IBlockAccess world) {
-		return world.getBlock(x, y, z);
+	public Block getBlock(IBlockAccess blockAccess) {
+		return blockAccess.getBlock(x, y, z);
 	}
 	
-	public Block getBlock_noChunkLoading(IBlockAccess world, ForgeDirection side) {
-		return getBlock_noChunkLoading(world, x + side.offsetX, y + side.offsetY, z + side.offsetZ);
+	public boolean isChunkLoaded(IBlockAccess blockAccess) {
+		return isChunkLoaded(blockAccess, x, z);
 	}
 	
-	public Block getBlock_noChunkLoading(IBlockAccess world) {
-		return getBlock_noChunkLoading(world, x, y, z);
-	}
-	
-	static public Block getBlock_noChunkLoading(IBlockAccess world, final int x, final int y, final int z) {
-		// skip unloaded worlds
-		if (world == null) {
-			return null;
-		}
-		if (world instanceof WorldServer) {
-			boolean isLoaded;
-			if (((WorldServer)world).getChunkProvider() instanceof ChunkProviderServer) {
-				ChunkProviderServer chunkProviderServer = (ChunkProviderServer) ((WorldServer)world).getChunkProvider();
+	static public boolean isChunkLoaded(IBlockAccess blockAccess, final int x, final int z) {
+		if (blockAccess instanceof WorldServer) {
+			return ChunkHandler.isLoaded((WorldServer) blockAccess, x, 64, z);
+			/*
+			if (((WorldServer) blockAccess).getChunkProvider() instanceof ChunkProviderServer) {
+				ChunkProviderServer chunkProviderServer = (ChunkProviderServer) ((WorldServer) blockAccess).getChunkProvider();
 				try {
 					Chunk chunk = (Chunk) chunkProviderServer.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x >> 4, z >> 4));
-					isLoaded = chunk != null && chunk.isChunkLoaded;
+					return chunk != null && chunk.isChunkLoaded;
 				} catch (NoSuchFieldError exception) {
-					isLoaded = chunkProviderServer.chunkExists(x >> 4, z >> 4);
+					return chunkProviderServer.chunkExists(x >> 4, z >> 4);
 				}
 			} else {
-				isLoaded = ((WorldServer)world).getChunkProvider().chunkExists(x >> 4, z >> 4);
+				return ((WorldServer) blockAccess).getChunkProvider().chunkExists(x >> 4, z >> 4);
 			}
-			// skip unloaded chunks
-			if (!isLoaded) {
-				return null;
-			}
+			/**/
 		}
-		return world.getBlock(x, y, z);
+		return true;
 	}
 	
-	public TileEntity getTileEntity(IBlockAccess world) {
-		return world.getTileEntity(x, y, z);
+	public Block getBlock_noChunkLoading(IBlockAccess blockAccess, ForgeDirection side) {
+		return getBlock_noChunkLoading(blockAccess, x + side.offsetX, y + side.offsetY, z + side.offsetZ);
 	}
 	
-	public int getBlockMetadata(IBlockAccess world) {
-		return world.getBlockMetadata(x, y, z);
+	public Block getBlock_noChunkLoading(IBlockAccess blockAccess) {
+		return getBlock_noChunkLoading(blockAccess, x, y, z);
+	}
+	
+	static public Block getBlock_noChunkLoading(IBlockAccess blockAccess, final int x, final int y, final int z) {
+		// skip unloaded worlds
+		if (blockAccess == null) {
+			return null;
+		}
+		// skip unloaded chunks
+		if (!isChunkLoaded(blockAccess, x, z)) {
+			return null;
+		}
+		return blockAccess.getBlock(x, y, z);
+	}
+	
+	public TileEntity getTileEntity(IBlockAccess blockAccess) {
+		return blockAccess.getTileEntity(x, y, z);
+	}
+	
+	public int getBlockMetadata(IBlockAccess blockAccess) {
+		return blockAccess.getBlockMetadata(x, y, z);
 	}
 	
 	public void setBlock(World worldObj, final Block block) {
@@ -256,23 +269,27 @@ public class VectorI implements Cloneable {
 	
 	@Override
 	public String toString() {
-		return "VectorI [" + x + "," + y + "," + z + "]";
+		return "VectorI [" + x + " " + y + " " + z + "]";
 	}
 	
 	
-	public static VectorI readFromNBT(NBTTagCompound nbtCompound) {
+	public static VectorI createFromNBT(NBTTagCompound nbtTagCompound) {
 		VectorI vector = new VectorI();
-		vector.x = nbtCompound.getInteger("x");
-		vector.y = nbtCompound.getInteger("y");
-		vector.z = nbtCompound.getInteger("z");
+		vector.readFromNBT(nbtTagCompound);
 		return vector;
 	}
 	
-	public NBTTagCompound writeToNBT(NBTTagCompound nbtCompound) {
-		nbtCompound.setInteger("x", x);
-		nbtCompound.setInteger("y", y);
-		nbtCompound.setInteger("z", z);
-		return nbtCompound;
+	public void readFromNBT(NBTTagCompound nbtTagCompound) {
+		x = nbtTagCompound.getInteger("x");
+		y = nbtTagCompound.getInteger("y");
+		z = nbtTagCompound.getInteger("z");
+	}
+	
+	public NBTTagCompound writeToNBT(NBTTagCompound nbtTagCompound) {
+		nbtTagCompound.setInteger("x", x);
+		nbtTagCompound.setInteger("y", y);
+		nbtTagCompound.setInteger("z", z);
+		return nbtTagCompound;
 	}
 	
 	// Square roots are evil, avoid them at all cost

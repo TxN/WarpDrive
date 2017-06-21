@@ -1,16 +1,17 @@
 package cr0s.warpdrive.world;
 
+import cr0s.warpdrive.LocalProfiler;
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.config.structures.Orb.OrbShell;
+import cr0s.warpdrive.config.structures.OrbInstance;
+import cr0s.warpdrive.data.JumpBlock;
+
 import java.util.ArrayList;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import cr0s.warpdrive.LocalProfiler;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.config.structures.Orb.OrbShell;
-import cr0s.warpdrive.config.structures.OrbInstance;
-import cr0s.warpdrive.data.JumpBlock;
 
 /*
  2014-06-07 21:41:45 [Infos] [STDOUT] Generating star (class 0) at -579 257 1162
@@ -183,19 +184,19 @@ public final class EntitySphereGen extends Entity {
 					// Add blocks to memory
 					OrbShell orbShell = orbInstance.getShellForSqRadius(sqRange);
 					// WarpDrive.logger.info("sqRange " + sqRange + " sqRadius " + sqRadius);
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord + x, yCoord + y, zCoord + z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord - x, yCoord + y, zCoord + z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord + x, yCoord - y, zCoord + z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord + x, yCoord + y, zCoord - z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord - x, yCoord - y, zCoord + z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord + x, yCoord - y, zCoord - z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord - x, yCoord + y, zCoord - z));
-					addBlock(new JumpBlock(orbShell.getRandomBlock(rand), xCoord - x, yCoord - y, zCoord - z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord + x, yCoord + y, zCoord + z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord - x, yCoord + y, zCoord + z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord + x, yCoord - y, zCoord + z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord + x, yCoord + y, zCoord - z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord - x, yCoord - y, zCoord + z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord + x, yCoord - y, zCoord - z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord - x, yCoord + y, zCoord - z));
+					addBlock(new JumpBlock(orbShell.getRandomUnit(rand), xCoord - x, yCoord - y, zCoord - z));
 				}
 			}
 		}
-		if (blocks != null) {
-			WarpDrive.logger.info("[EntitySphereGen] Saved " + blocks.size() + " blocks (estimated to " + pregenSize + ")");
+		if (blocks != null && blocks.size() > pregenSize) {
+			WarpDrive.logger.warn("[EntitySphereGen] Saved " + blocks.size() + " blocks (estimated to " + pregenSize + ")");
 		}
 		LocalProfiler.stop();
 	}
@@ -227,6 +228,15 @@ public final class EntitySphereGen extends Entity {
 	
 	@Override
 	protected void entityInit() {
+		noClip = true;
+	}
+	
+	// override to skip the block bounding override on client side
+	@Override
+	public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int p_70056_9_) {
+		//	super.setPositionAndRotation2(x, y, z, yaw, pitch, p_70056_9_);
+		this.setPosition(x, y, z);
+		this.setRotation(yaw, pitch);
 	}
 	
 	@Override

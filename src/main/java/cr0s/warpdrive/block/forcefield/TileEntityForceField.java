@@ -1,11 +1,13 @@
 package cr0s.warpdrive.block.forcefield;
 
 import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.api.IBeamFrequency;
 import cr0s.warpdrive.block.TileEntityAbstractBase;
 import cr0s.warpdrive.config.Dictionary;
 import cr0s.warpdrive.config.WarpDriveConfig;
 import cr0s.warpdrive.data.ForceFieldSetup;
 import cr0s.warpdrive.data.VectorI;
+
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -35,8 +37,8 @@ public class TileEntityForceField extends TileEntityAbstractBase {
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 		if (tag.hasKey("projector")) {
-			vProjector = VectorI.readFromNBT(tag.getCompoundTag("projector"));
-			cache_beamFrequency = tag.getInteger("beamFrequency");
+			vProjector = VectorI.createFromNBT(tag.getCompoundTag("projector"));
+			cache_beamFrequency = tag.getInteger(IBeamFrequency.BEAM_FREQUENCY_TAG);
 			if (tag.hasKey("projector")) {
 				try {
 					cache_blockCamouflage = Block.getBlockFromName(tag.getString("camouflageBlock"));
@@ -73,7 +75,7 @@ public class TileEntityForceField extends TileEntityAbstractBase {
 		super.writeToNBT(tagCompound);
 		if (vProjector != null) {
 			tagCompound.setTag("projector", vProjector.writeToNBT(new NBTTagCompound()));
-			tagCompound.setInteger("beamFrequency", cache_beamFrequency);
+			tagCompound.setInteger(IBeamFrequency.BEAM_FREQUENCY_TAG, cache_beamFrequency);
 			if (cache_blockCamouflage != null) {
 				tagCompound.setString("camouflageBlock", Block.blockRegistry.getNameForObject(cache_blockCamouflage));
 				tagCompound.setByte("camouflageMeta", (byte)cache_metadataCamouflage);

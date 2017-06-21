@@ -1,5 +1,8 @@
 package cr0s.warpdrive.item;
 
+import cr0s.warpdrive.WarpDrive;
+import cr0s.warpdrive.data.UpgradeType;
+
 import java.util.List;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -8,12 +11,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
-import cr0s.warpdrive.WarpDrive;
-import cr0s.warpdrive.data.UpgradeType;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemUpgrade extends Item {
+	
 	private static ItemStack[] isCache = new ItemStack[UpgradeType.values().length];
-	private static IIcon[] iconBuffer = new IIcon[UpgradeType.values().length];
+	
+	@SideOnly(Side.CLIENT)
+	private IIcon[] iconBuffer;
 	
 	public ItemUpgrade() {
 		setHasSubtypes(true);
@@ -83,8 +90,10 @@ public class ItemUpgrade extends Item {
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerIcons(IIconRegister ir) {
+		iconBuffer = new IIcon[UpgradeType.values().length];
 		for (UpgradeType val : UpgradeType.values()) {
 			iconBuffer[val.ordinal()] = ir.registerIcon("warpdrive:upgrade" + val);
 		}
