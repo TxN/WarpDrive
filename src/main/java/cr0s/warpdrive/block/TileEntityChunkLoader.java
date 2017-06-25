@@ -6,6 +6,9 @@ import cr0s.warpdrive.data.UpgradeType;
 import cr0s.warpdrive.item.ItemUpgrade;
 import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.peripheral.IComputerAccess;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -127,9 +130,6 @@ public class TileEntityChunkLoader extends TileEntityAbstractChunkLoading {
 		nbt.setInteger("posDZ", posDZ);
 	}
 
-	// OpenComputer callback methods
-	// FIXME: implement OpenComputers...
-
 	@Override
 	@Optional.Method(modid = "ComputerCraft")
 	public Object[] callMethod(IComputerAccess computer, ILuaContext context, int method, Object[] arguments) {
@@ -137,33 +137,74 @@ public class TileEntityChunkLoader extends TileEntityAbstractChunkLoading {
 		
 		switch (methodName) {
 			case "radius":
-				if (arguments.length == 1) {
-					int dist = Commons.toInt(arguments[0]);
-					negDX = dist;
-					negDZ = dist;
-					posDX = dist;
-					posDZ = dist;
-					changedDistance();
-					return new Object[]{true};
-				}
-				return new Object[]{false};
+				return radius(arguments);
 			case "bounds":
-				if (arguments.length == 4) {
-					negDX = Commons.toInt(arguments[0]);
-					posDX = Commons.toInt(arguments[1]);
-					negDZ = Commons.toInt(arguments[2]);
-					posDZ = Commons.toInt(arguments[3]);
-					changedDistance();
-				}
-				return new Object[]{negDX, posDX, negDZ, posDZ};
+				return bounds(arguments);
 			case "active":
-				if (arguments.length == 1)
-					shouldLoad = Commons.toBool(arguments[0]);
-				return new Object[]{shouldChunkLoad()};
+				return active(arguments);
 			case "upgrades":
-				return new Object[] { getUpgradesAsString() };
+				return upgrades(arguments);
 		}
 		
 		return super.callMethod(computer, context, method, arguments);
+	}
+	
+	// OpenComputer callback methods
+	@Callback
+	@Optional.Method(modid = "OpenComputers")
+	public Object[] radius(Context context, Arguments arguments) {
+		return radius(argumentsOCtoCC(arguments));
+	}
+	
+	@Callback
+	@Optional.Method(modid = "OpenComputers")
+	public Object[] bounds(Context context, Arguments arguments) {
+		return bounds(argumentsOCtoCC(arguments));
+	}
+	
+	@Callback
+	@Optional.Method(modid = "OpenComputers")
+	public Object[] active(Context context, Arguments arguments) {
+		return active(argumentsOCtoCC(arguments));
+	}
+	
+	@Callback
+	@Optional.Method(modid = "OpenComputers")
+	public Object[] upgrades(Context context, Arguments arguments) {
+		return upgrades(argumentsOCtoCC(arguments));
+	}
+	
+	public Object[] radius(Object[] arguments) {
+		if (arguments.length == 1) {
+			int dist = Commons.toInt(arguments[0]);
+			negDX = dist;
+			negDZ = dist;
+			posDX = dist;
+			posDZ = dist;
+			changedDistance();
+			return new Object[]{true};
+		}
+		return new Object[]{false};
+	}
+	
+	public Object[] bounds(Object[] arguments) {
+		if (arguments.length == 4) {
+			negDX = Commons.toInt(arguments[0]);
+			posDX = Commons.toInt(arguments[1]);
+			negDZ = Commons.toInt(arguments[2]);
+			posDZ = Commons.toInt(arguments[3]);
+			changedDistance();
+		}
+		return new Object[]{negDX, posDX, negDZ, posDZ};
+	}
+	
+	public Object[] active(Object[] arguments) {
+		if (arguments.length == 1)
+			shouldLoad = Commons.toBool(arguments[0]);
+		return new Object[]{shouldChunkLoad()};
+	}
+	
+	public Object[] upgrades(Object[] arguments) {
+		return new Object[] { getUpgradesAsString() };
 	}
 }
