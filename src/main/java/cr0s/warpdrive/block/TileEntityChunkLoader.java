@@ -111,8 +111,8 @@ public class TileEntityChunkLoader extends TileEntityAbstractChunkLoading {
 			}
 		}
 
-		minChunk = new ChunkCoordIntPair(myChunk.chunkXPos+negDX,myChunk.chunkZPos+negDZ);
-		maxChunk = new ChunkCoordIntPair(myChunk.chunkXPos+posDX,myChunk.chunkZPos+posDZ);
+		minChunk = new ChunkCoordIntPair(myChunk.chunkXPos + negDX, myChunk.chunkZPos + negDZ);
+		maxChunk = new ChunkCoordIntPair(myChunk.chunkXPos + posDX, myChunk.chunkZPos + posDZ);
 		area = (posDX - negDX + 1) * (posDZ - negDZ + 1);
 		refreshLoading(true);
 	}
@@ -121,7 +121,7 @@ public class TileEntityChunkLoader extends TileEntityAbstractChunkLoading {
 	public void readFromNBT(NBTTagCompound nbt)
 	{
 		super.readFromNBT(nbt);
-		setBounds(nbt.getInteger("negDX"),nbt.getInteger("posDX"),nbt.getInteger("negDZ"),nbt.getInteger("posDZ"));
+		setBounds(nbt.getInteger("negDX"), nbt.getInteger("posDX"), nbt.getInteger("negDZ"), nbt.getInteger("posDZ"));
 		changedDistance();
 	}
 
@@ -144,7 +144,7 @@ public class TileEntityChunkLoader extends TileEntityAbstractChunkLoading {
 	
 	public Object[] bounds(Object[] arguments) {
 		if (arguments.length == 4) {
-			setBounds(Commons.toInt(arguments[0]),Commons.toInt(arguments[1]),Commons.toInt(arguments[2]),Commons.toInt(arguments[3]));
+			setBounds(Commons.toInt(arguments[0]), Commons.toInt(arguments[1]), Commons.toInt(arguments[2]), Commons.toInt(arguments[3]));
 			changedDistance();
 		}
 		return new Object[]{negDX, posDX, negDZ, posDZ};
@@ -203,7 +203,7 @@ public class TileEntityChunkLoader extends TileEntityAbstractChunkLoading {
 	@Override
 	@Optional.Method(modid = "ComputerCraft")
 	public Object[] callMethod(IComputerAccess computer, ILuaContext context, int method, Object[] arguments) {
-		String methodName = getMethodName(method);
+		final String methodName = getMethodName(method);
 		
 		switch (methodName) {
 			case "radius":
